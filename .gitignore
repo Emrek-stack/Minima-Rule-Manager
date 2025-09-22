@@ -387,8 +387,9 @@ FodyWeavers.xsd
 
 # SQLite databases
 *.db
-*.sqlite
 *.sqlite3
+# But allow .csproj files with sqlite in the name
+!src/**/*.csproj
 
 # RuleEngine specific
 ruleengine.db
