@@ -1,6 +1,6 @@
 # RuleEngine
 
-[![NuGet](https://img.shields.io/nuget/v/RuleEngine.Core.svg)](https://www.nuget.org/packages/RuleEngine.Core/)
+[![NuGet](https://img.shields.io/nuget/v/Minima.RuleEngine.Core.svg)](https://www.nuget.org/packages/Minima.RuleEngine.Core/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![.NET](https://img.shields.io/badge/.NET-8.0-blue.svg)](https://dotnet.microsoft.com/download/dotnet/8.0)
 
@@ -23,22 +23,22 @@
 
 | Package | Description | NuGet |
 |---------|-------------|-------|
-| `RuleEngine.Core` | Core rule engine functionality | [![NuGet](https://img.shields.io/nuget/v/RuleEngine.Core.svg)](https://www.nuget.org/packages/RuleEngine.Core/) |
-| `RuleEngine.Sqlite` | SQLite persistence layer | [![NuGet](https://img.shields.io/nuget/v/RuleEngine.Sqlite.svg)](https://www.nuget.org/packages/RuleEngine.Sqlite/) |
+| `Minima.RuleEngine.Core` | Core rule engine functionality | [![NuGet](https://img.shields.io/nuget/v/Minima.RuleEngine.Core.svg)](https://www.nuget.org/packages/Minima.RuleEngine.Core/) |
+| `Minima.RuleEngine.Sqlite` | SQLite persistence layer | [![NuGet](https://img.shields.io/nuget/v/Minima.RuleEngine.Sqlite.svg)](https://www.nuget.org/packages/Minima.RuleEngine.Sqlite/) |
 
 ## 🏃‍♂️ Quick Start
 
 ### 1. Install the Package
 
 ```bash
-dotnet add package RuleEngine.Core
+dotnet add package Minima.RuleEngine.Core
 ```
 
 ### 2. Basic Usage
 
 ```csharp
-using RuleEngine.Core.Rule;
-using RuleEngine.Core.Models;
+using Minima.RuleEngine.Core.Rule;
+using Minima.RuleEngine.Core.Models;
 
 // Define your input model
 public class CustomerInput : RuleInputModel
@@ -108,13 +108,13 @@ if (result.Success)
 ### 1. Install SQLite Package
 
 ```bash
-dotnet add package RuleEngine.Sqlite
+dotnet add package Minima.RuleEngine.Sqlite
 ```
 
 ### 2. Configure Services
 
 ```csharp
-using RuleEngine.Sqlite.Extensions;
+using Minima.RuleEngine.Sqlite.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -128,7 +128,7 @@ var app = builder.Build();
 ### 3. Create and Manage Rules
 
 ```csharp
-using RuleEngine.Core.Abstractions;
+using Minima.RuleEngine.Core.Abstractions;
 
 public class RuleService
 {

@@ -28,8 +28,8 @@
     <Version>1.0.1</Version>
     <Authors>RuleEngine Team</Authors>
     <Description>SQLite persistence provider for RuleEngine with Entity Framework Core integration.</Description>
-    <PackageProjectUrl>https://github.com/your-org/ruleengine</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/your-org/ruleengine</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/Emrek-stack/Minima-Rule-Manager</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Emrek-stack/Minima-Rule-Manager</RepositoryUrl>
     <PackageTags>rule-engine;sqlite;entity-framework;persistence;database</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
