@@ -29,7 +29,7 @@ Please include the following information in your report:
 - Any special configuration required to reproduce the issue
 - Step-by-step instructions to reproduce the issue
 - Proof-of-concept or exploit code (if possible)
-- Impact of the issue, including how an attacker might exploit it
+- Impact of the issue, including how an attacker might exploit it  
 
 ### What to Expect
 
