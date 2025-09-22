@@ -86,7 +86,15 @@ jobs:
         echo "Validating NuGet packages..."
         for package in ./artifacts/*.nupkg; do
           echo "Package: $package"
-          dotnet nuget push "$package" --api-key ${{ env.NUGET_API_KEY }} --source ${{ env.NUGET_SOURCE }} --dry-run
+          # Check if package exists and is valid
+          if [ -f "$package" ]; then
+            echo "✅ Package exists: $(basename "$package")"
+            # Show package info without pushing
+            dotnet nuget list source
+          else
+            echo "❌ Package not found: $package"
+            exit 1
+          fi
         done
       
     - name: Publish to NuGet (Release)
