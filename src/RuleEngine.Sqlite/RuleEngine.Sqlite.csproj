@@ -24,7 +24,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <PackageId>RuleEngine.Sqlite</PackageId>
+    <PackageId>Minima.RuleEngine.Sqlite</PackageId>
     <Version>1.0.1</Version>
     <Authors>RuleEngine Team</Authors>
     <Description>SQLite persistence provider for RuleEngine with Entity Framework Core integration.</Description>
