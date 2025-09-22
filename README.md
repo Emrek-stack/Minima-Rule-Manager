@@ -19,6 +19,10 @@
 - **MVC Integration**: Ready-to-use ASP.NET Core MVC sample application
 - **KnockoutJS Frontend**: Complete rule builder UI (ported from Gordios)
 
+## 📚 Documentation
+
+- **[E-ticaret Örnekleri](docs/ECOMMERCE_EXAMPLES.md)** - E-ticaret sistemleri için detaylı kullanım örnekleri (basit kurallardan karmaşık kurallara)
+
 ## 📦 Packages
 
 | Package | Description | NuGet |
