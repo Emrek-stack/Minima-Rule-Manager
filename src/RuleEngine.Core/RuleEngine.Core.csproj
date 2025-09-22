@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PackageId>RuleEngine.Core</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>RuleEngine Team</Authors>
+    <Description>A modern, extensible rule engine for .NET 8 with C# expression evaluation using Roslyn.</Description>
+    <PackageProjectUrl>https://github.com/your-org/ruleengine</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/your-org/ruleengine</RepositoryUrl>
+    <PackageTags>rule-engine;rules;expression;evaluation;roslyn;csharp</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>rulemanager_icon_64.png</PackageIcon>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.8.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\rulemanager_icon_64.png" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>

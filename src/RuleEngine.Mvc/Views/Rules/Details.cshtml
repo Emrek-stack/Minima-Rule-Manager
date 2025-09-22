@@ -1,0 +1,126 @@
+@model RuleEngine.Core.Models.RuleDefinition
+
+@{
+    ViewData["Title"] = "Rule Details";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>@Model.Name</h1>
+    <div>
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edit</a>
+        <a asp-action="Execute" asp-route-id="@Model.Id" class="btn btn-success">Execute</a>
+        <a asp-action="Index" class="btn btn-secondary">Back to Rules</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>Rule Information</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">ID:</dt>
+                    <dd class="col-sm-9"><code>@Model.Id</code></dd>
+                    
+                    <dt class="col-sm-3">Name:</dt>
+                    <dd class="col-sm-9">@Model.Name</dd>
+                    
+                    <dt class="col-sm-3">Description:</dt>
+                    <dd class="col-sm-9">@Model.Description</dd>
+                    
+                    <dt class="col-sm-3">Status:</dt>
+                    <dd class="col-sm-9">
+                        <span class="badge @(Model.Status == RuleEngine.Core.Models.RuleStatus.Active ? "bg-success" : 
+                                              Model.Status == RuleEngine.Core.Models.RuleStatus.Draft ? "bg-warning" : "bg-secondary")">
+                            @Model.Status
+                        </span>
+                    </dd>
+                    
+                    <dt class="col-sm-3">Version:</dt>
+                    <dd class="col-sm-9">@Model.Version</dd>
+                    
+                    <dt class="col-sm-3">Tags:</dt>
+                    <dd class="col-sm-9">
+                        @if (Model.Tags.Any())
+                        {
+                            @foreach (var tag in Model.Tags)
+                            {
+                                <span class="badge bg-info me-1">@tag</span>
+                            }
+                        }
+                        else
+                        {
+                            <span class="text-muted">No tags</span>
+                        }
+                    </dd>
+                    
+                    <dt class="col-sm-3">Created:</dt>
+                    <dd class="col-sm-9">@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</dd>
+                    
+                    <dt class="col-sm-3">Updated:</dt>
+                    <dd class="col-sm-9">@Model.UpdatedAt.ToString("yyyy-MM-dd HH:mm:ss")</dd>
+                </dl>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5>Rule Content</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6>Predicate Expression:</h6>
+                    <pre class="bg-light p-3 rounded"><code>@Model.Content.PredicateExpression</code></pre>
+                    <small class="text-muted">This expression determines when the rule applies.</small>
+                </div>
+                
+                <div class="mb-3">
+                    <h6>Result Expression:</h6>
+                    <pre class="bg-light p-3 rounded"><code>@Model.Content.ResultExpression</code></pre>
+                    <small class="text-muted">This expression returns the result when the predicate is true.</small>
+                </div>
+                
+                <div class="mb-3">
+                    <h6>Language:</h6>
+                    <span class="badge bg-primary">@Model.Content.Language</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a asp-action="Execute" asp-route-id="@Model.Id" class="btn btn-success">Execute Rule</a>
+                    <a asp-action="History" asp-route-id="@Model.Id" class="btn btn-info">View History</a>
+                    <a asp-action="Versions" asp-route-id="@Model.Id" class="btn btn-warning">Manage Versions</a>
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edit Rule</a>
+                    <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">Delete Rule</a>
+                </div>
+            </div>
+        </div>
+        
+        @if (Model.Parameters.Any())
+        {
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5>Parameters</h5>
+                </div>
+                <div class="card-body">
+                    @foreach (var param in Model.Parameters)
+                    {
+                        <div class="mb-2">
+                            <strong>@param.Key:</strong> <code>@param.Value</code>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>

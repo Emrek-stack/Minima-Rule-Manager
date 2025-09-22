@@ -1,0 +1,100 @@
+@model RuleEngine.Mvc.ViewModels.ResultPanelViewModel
+
+<style>
+    .item-handle {
+        position: absolute;
+        top: 50%;
+        z-index: 2;
+        cursor: move;
+        color: #dc9c9c;
+        transform: translateY(-50%);
+    }
+
+    .rule-item-sub-group {
+        position: relative;
+    }
+
+    .rule-item-sub-group {
+        margin-left: 30px;
+    }
+
+    .rule-container {
+        margin-left: 15px;
+    }
+
+    .drag-placeholder {
+        border: 2px dotted #eaa3a3;
+    }
+
+    .rule-item-sub-group .rule-container {
+        margin-left: 20px;
+    }
+
+    .drag-handle {
+        position: absolute;
+        top: 0;
+        left: 10px;
+        width: 20px;
+        height: 100%;
+        background: #F1F2F7;
+        cursor: move;
+    }
+
+    .metadataselect {
+        width: 120px !important;
+    }
+
+    .parameter-item {
+        margin-left: 10px;
+    }
+
+    .remove-parameter {
+        float: right;
+        position: absolute;
+        right: -5px;
+        top: -9px;
+        font-size: 15px;
+        cursor: move !important;
+    }
+
+        .remove-parameter i {
+            color: #e2a9a9;
+        }
+
+            .remove-parameter i:hover {
+                color: #fd6d6d;
+                cursor: pointer;
+            }
+            
+    .grd-form-group {
+        margin-bottom: 15px;
+    }
+    
+    .grd-label {
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 5px;
+    }
+    
+    .bottom-20 {
+        margin-bottom: 20px;
+    }
+</style>
+
+<h2 class="tab-title">Sonuç</h2>
+<div class="pill"></div>
+<div class="row bottom-20" data-bind="with:ResultModel" id="RuleResultPanel">
+    <div class="col-lg-6 col-md-6 col-sm-12">
+        <div class="form-group grd-form-group">
+            <label class="control-label grd-label">Sonuç</label>
+            <select class="form-control custom-select2" data-bind='options:Metadatas,optionsText: "Title",optionsValue:"Id",optionsCaption:"Seçiniz",value:MetadataId,event:{ change: Change}'></select>
+        </div>
+    </div> 
+    <!-- ko foreach:TreeItems-->
+    <div data-bind="template: { name:'ResultItemTemplate', data:$data}" class="col-lg-12 col-md-12 col-sm-12"></div>
+    <!-- /ko --> 
+</div> 
+
+@{
+    Html.RenderPartial("_RuleTemplates");
+}

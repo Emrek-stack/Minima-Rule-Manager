@@ -1,0 +1,142 @@
+@model RuleEngine.Mvc.ViewModels.RuleHistoryViewModel
+
+@{
+    ViewData["Title"] = "Execution History";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Execution History: @Model.RuleName</h1>
+    <a asp-action="Index" class="btn btn-secondary">Back to Rules</a>
+</div>
+
+@if (Model.Executions.Any())
+{
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Executed At</th>
+                    <th>Success</th>
+                    <th>Duration</th>
+                    <th>Input</th>
+                    <th>Output</th>
+                    <th>Error</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var execution in Model.Executions)
+                {
+                    <tr>
+                        <td>@execution.ExecutedAt.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                        <td>
+                            @if (execution.Success)
+                            {
+                                <span class="badge bg-success">Success</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">Failed</span>
+                            }
+                        </td>
+                        <td>@execution.Duration.TotalMilliseconds.ToString("F2") ms</td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#inputModal" data-input="@execution.Input">
+                                View Input
+                            </button>
+                        </td>
+                        <td>
+                            @if (execution.Success)
+                            {
+                                <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#outputModal" data-output="@execution.Output">
+                                    View Output
+                                </button>
+                            }
+                            else
+                            {
+                                <span class="text-muted">-</span>
+                            }
+                        </td>
+                        <td>
+                            @if (!execution.Success && !string.IsNullOrEmpty(execution.ErrorMessage))
+                            {
+                                <span class="text-danger" title="@execution.ErrorMessage">
+                                    @(execution.ErrorMessage.Length > 50 ? execution.ErrorMessage.Substring(0, 50) + "..." : execution.ErrorMessage)
+                                </span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <div class="alert alert-info">
+        <h4>No execution history found</h4>
+        <p>This rule hasn't been executed yet.</p>
+        <a asp-action="Execute" asp-route-id="@Model.RuleId" class="btn btn-primary">Execute Rule</a>
+    </div>
+}
+
+<!-- Input Modal -->
+<div class="modal fade" id="inputModal" tabindex="-1" aria-labelledby="inputModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="inputModalLabel">Input Data</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <pre id="inputContent" class="bg-light p-3 rounded"></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Output Modal -->
+<div class="modal fade" id="outputModal" tabindex="-1" aria-labelledby="outputModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="outputModalLabel">Output Data</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <pre id="outputContent" class="bg-light p-3 rounded"></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Handle input modal
+        document.getElementById('inputModal').addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var input = button.getAttribute('data-input');
+            var modalBody = document.getElementById('inputContent');
+            
+            try {
+                var jsonObj = JSON.parse(input);
+                modalBody.textContent = JSON.stringify(jsonObj, null, 2);
+            } catch (e) {
+                modalBody.textContent = input;
+            }
+        });
+        
+        // Handle output modal
+        document.getElementById('outputModal').addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var output = button.getAttribute('data-output');
+            var modalBody = document.getElementById('outputContent');
+            
+            try {
+                var jsonObj = JSON.parse(output);
+                modalBody.textContent = JSON.stringify(jsonObj, null, 2);
+            } catch (e) {
+                modalBody.textContent = output;
+            }
+        });
+    </script>
+}
