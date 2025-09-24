@@ -1,0 +1,251 @@
+@model RuleEngine.Mvc.ViewModels.RuleMetadataDetailViewModel
+@{
+    ViewData["Title"] = Model.Id > 0 ? Model.Name + " Detayı" : "Metadata Oluştur";
+}
+
+<style>
+    .parameter-panel {
+        padding: 15px;
+        margin-top: 10px;
+        border: #e4e0e0 solid 1px;
+        min-height: 60px;
+        position: relative;
+    }
+    .parameter-panel.active{
+        -webkit-box-shadow: 6px 7px 5px -1px rgba(0,0,0,0.11);
+        -moz-box-shadow: 6px 7px 5px -1px rgba(0,0,0,0.11);
+        box-shadow: 6px 7px 5px -1px rgba(0,0,0,0.11);
+    }
+    .remove-parameter {
+        float: right;
+        position: absolute;
+        right: -5px;
+        top: -9px;
+        font-size: 15px;
+        cursor: move !important;
+    }
+
+        .remove-parameter i {
+            color: #e2a9a9;
+        }
+
+            .remove-parameter i:hover {
+                color: #fd6d6d;
+                cursor: pointer;
+            }
+
+    .no-margin-bottom {
+        margin-bottom: 0px !important;
+    }
+
+    .parameter-info {
+        position: absolute;
+        left: 20px;
+        top: -9px;
+        font-size: 14px;
+        background: #FFF;
+        padding-left: 7px;
+        padding-right: 7px;
+    }
+
+    .select2-results__option[aria-selected=true] {
+        display: none;
+    }
+
+    .drag-handle .icon-menu {
+        position: absolute;
+        top: 50%;
+        z-index: 2;
+        cursor: move;
+        color: #ef7575;
+        transform: translateY(-50%);
+        font-size: 20px;
+    }
+
+    .drag-handle {
+        width: 20px;
+        height: 100%;
+        background: #F1F2F7;
+        position: absolute;
+        top: 0px;
+        left: 0px;
+    }
+
+    .drag-placeholder {
+        border: 2px dotted #eaa3a3;
+        opacity:.4;
+    }
+    .parameter-template{
+        margin-left:10px;
+    }
+</style>
+
+<div class="card">
+    <div class="card-body">
+        <div data-bind="with:MetadataModel">
+            <div class="row bottom-10">
+                <div class="col-lg-6 col-md-6 col-sm-12">
+                    <div class="form-group mb-3">
+                        <label class="form-label">Kategori</label>
+                        <select class="form-select category" data-bind='options: CategoryItems,optionsText: "Text",optionsValue:"Value",selectedOptions:Categories' multiple></select>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">Adı</label>
+                        <input type="text" class="form-control" data-bind="value:Name">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">Başlık</label>
+                        <input type="text" class="form-control" data-bind="value:Title">
+                    </div>
+                    <div class="form-group mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" data-bind="checked:IsPredicate" />
+                            <label class="form-check-label">Seçim Kuralı?</label>
+                        </div>
+                    </div>
+                    <h5>Açıklama</h5>
+                    <div class="editor-wrapper">
+                        <textarea class="form-control" rows="5" name="Description" id="Description" data-bind="value:Description"></textarea>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-6 col-sm-12">
+                    <div class="form-group">
+                        <pre id="editor" style="min-height: 150px;" data-bind="text:ExpressionString"> </pre>
+                    </div>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-outline-primary btn-sm" data-bind="click:AddFormatToEditor">Add Format</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" data-bind="click:AddObjectListToEditor">Add Object List</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" data-bind="click:AddVariableToEditor">Add Variable</button>
+                    </div>
+                </div>
+            </div>
+            <div class="row bottom-10">
+                <div class="col-md-5">
+                    <div class="form-group mb-3">
+                        <label class="form-label">Parametre Tipi</label>
+                        <select class="form-select" data-bind='options: ParameterTypes, optionsCaption:"Seçiniz",optionsText: "Text",optionsValue:"Value",value:ParameterTypeId' id="ParameterTypeId"></select>
+                    </div>
+                </div>
+                <div class="col-md-1">
+                    <button type="button" class="btn btn-primary" data-bind="click:AddParameter"><i class="fas fa-plus"></i></button>
+                </div>
+                <div class="col-md-2 text-end">
+                    <button type="button" class="btn btn-success" data-bind="click:Save">Kaydet</button>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-8">
+                    <div id="sortable-panel" data-bind="sortable: {foreach: Parameters, options: {handle: '.drag-handle', draggable: '.parameter-panel',animation: 150,onEnd:UpdateSort,ghostClass:'drag-placeholder'}}">
+
+                        <div class="parameter-panel">
+                            <div class="drag-handle">
+                                <span class="fas fa-bars"></span>
+                            </div>
+                            <span data-bind="text:Name+'-{'+$index()+'}'" class="parameter-info"></span>
+                            <div class="remove-parameter"><i class="fas fa-times" data-bind="click:$parent.RemoveParameter"></i></div>
+                            <div data-bind="template: { name: 'Parameter-'+TypeName, data:$data}" class="parameter-template">  </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<partial name="_ParameterTemplate" />
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/mode-csharp.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/theme-monokai.min.js"></script>
+    <script src="~/js/theme-rule.js"></script>
+    <script src="~/js/mode-rule-csharp.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.5.1/knockout-latest.js"></script>
+    <script src="~/js/knockout-sortable.js"></script>
+    <script src="~/js/rule-management.js"></script>
+    <script>
+        // Sample data for testing - similar to original Gordios
+        var destinationTypes = [
+            { Text: "Hotel", Value: "Hotel" },
+            { Text: "Flight", Value: "Flight" },
+            { Text: "Transfer", Value: "Transfer" },
+            { Text: "Tour", Value: "Tour" }
+        ];
+        
+        var definitionTypes = [
+            "CustomerType",
+            "ProductType", 
+            "OrderStatus",
+            "PaymentMethod",
+            "ShippingMethod"
+        ];
+
+        var data = @Html.Raw(Json.Serialize(Model));
+        console.log("RuleMetadata Detail data:", data);
+        console.log("CategoryItems:", data.CategoryItems);
+        console.log("ParameterTypes:", data.ParameterTypes);
+        console.log("Full model object:", @Html.Raw(Json.Serialize(Model)));
+        // Fix property case mismatch
+        data.Name = data.name;
+        data.Title = data.title;
+        data.Description = data.description;
+        data.ExpressionString = data.expressionString;
+        
+        console.log("Model Name:", data.Name);
+        console.log("Model Title:", data.Title);
+        console.log("Model Description:", data.Description);
+        console.log("Model ExpressionString:", data.ExpressionString);
+        
+        // Fix: Manually populate CategoryItems and ParameterTypes if they're undefined
+        if (!data.CategoryItems || data.CategoryItems.length === 0) {
+            data.CategoryItems = [
+                { Text: "Pricing", Value: "1" },
+                { Text: "Validation", Value: "2" },
+                { Text: "Business Logic", Value: "3" },
+                { Text: "Customer", Value: "4" },
+                { Text: "Product", Value: "5" },
+                { Text: "Order", Value: "6" },
+                { Text: "Payment", Value: "7" },
+                { Text: "Shipping", Value: "8" },
+                { Text: "Discount", Value: "9" },
+                { Text: "Inventory", Value: "10" }
+            ];
+            console.log("CategoryItems manually populated:", data.CategoryItems);
+        }
+        
+        if (!data.ParameterTypes || data.ParameterTypes.length === 0) {
+            data.ParameterTypes = [
+                { Text: "NumericParameter", Value: "NumericParameter" },
+                { Text: "StringParameter", Value: "StringParameter" },
+                { Text: "DateTimeParameter", Value: "DateTimeParameter" },
+                { Text: "ArrayParameter", Value: "ArrayParameter" },
+                { Text: "ListParameter", Value: "ListParameter" },
+                { Text: "DefinitionParameter", Value: "DefinitionParameter" },
+                { Text: "DestinationParameter", Value: "DestinationParameter" },
+                { Text: "ReadonlyParameter", Value: "ReadonlyParameter" },
+                { Text: "BooleanListParameter", Value: "BooleanListParameter" },
+                { Text: "EqualityListParameter", Value: "EqualityListParameter" },
+                { Text: "DateTimeGroupParameter", Value: "DateTimeGroupParameter" }
+            ];
+            console.log("ParameterTypes manually populated:", data.ParameterTypes);
+        }
+        
+        // Initialize metadata manager when document is ready
+        $(document).ready(function() {
+            console.log("Document ready, initializing metadata manager...");
+            console.log("Data being passed:", data);
+            
+            if (window.rule && window.rule.metadata) {
+                console.log("Initializing metadata manager...");
+                rule.metadata.init(data);
+                console.log("Metadata manager initialized");
+            } else {
+                console.error("Rule metadata manager not found!");
+                console.log("Available window objects:", Object.keys(window).filter(k => k.includes('rule')));
+                console.log("window.rule:", window.rule);
+            }
+        });
+    </script>
+}

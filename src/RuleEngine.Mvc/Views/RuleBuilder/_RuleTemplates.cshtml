@@ -1,0 +1,135 @@
+<script type="text/html" id="RuleTreeStatement">
+    <div class="remove-parameter"><i class="fas fa-times" data-bind="click:$parentContext.$parent.Remove"></i></div>
+    <div class="drag-handle"><span class="rule-handle item-handle fas fa-bars"></span></div>
+    <div class="sort-group" id="SortGroup1">
+        <span class="rule-number" data-bind="contentEditable: true, htmlLazy: Name" contenteditable="true"></span>
+        <span class="" data-bind="Text: Name"></span>
+        <div data-bind="sortable:{foreach:Children,options:{handle:'.state-handle', draggable:'.rule-item-sub-group',animation:150,onEnd:UpdateSort,OnMove:OnMove,ghostClass:'drag-placeholder',group:'statement'}}">
+            <div class="rule-item-sub-group" data-bind="click:$parent.FocusStatement">
+                <!-- ko if: Type=='NamedRuleStatement' -->
+                <span class="state-handle fas fa-bars item-handle"></span>
+                <!-- /ko -->
+                <div class="rule-container" data-bind="template: { name:TemplateName, data:$data }"> </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/html" id="NamedRuleStatement">
+    <div class="rule-operations">
+        <a href="#" class="fas fa-times" data-bind="visible:$parentContext.$parent.Children().length>1,click:$parentContext.$parent.Remove"></a>
+        <a href="#" class="fas fa-plus" data-bind="visible:($parentContext.$index()==($parentContext.$parent.Children().length-1)), click:$parentContext.$parent.Add"></a>
+    </div>
+    <div>
+        <span>Koşul</span>
+        <div class="form-group">
+            <select class="form-select metadataselect statement-metadata"
+                    data-bind='options: $root.RuleModel.Metadatas,optionsText: "Title",optionsValue:"Id",optionsCaption:"Seçiniz",value:MetadataId,event:{ change: $parentContext.$parent.Change},attr:{id:StatementKey}'></select>
+        </div>
+    </div>
+    <!-- ko foreach:Parameters-->
+    <div data-bind="template: { name:TypeName, data:$data}" class="parameter-item"></div>
+    <!-- /ko -->
+
+</script>
+
+@*AndOrStatement*@
+<script type="text/html" id="AndOrStatement">
+    <div class="form-group">
+        <select class="form-select metadataselect" data-bind='options:Items,optionsText: "Title",optionsValue:"Name",optionsCaption:"Seçiniz",value:Selected,event:{change:Change}'></select>
+    </div>
+</script>
+
+
+@*Basic*@
+<script type="text/html" id="NumericParameter">
+    <span data-bind="text:Title"></span>
+    <div style="max-width:120px;">
+        <input type="text" class="form-control basic-parameter " data-bind="value:Selected,attr:{id:ElementId}">
+    </div>
+
+</script>
+@*Datetime*@
+<script type="text/html" id="DateTimeParameter">
+    <span data-bind="text:Title"></span>
+    <div style="max-width:120px;">
+        <input type="text" class="form-control datetime-parameter" data-bind="datetimepicker:{},value:Selected,attr:{id:ElementId}">
+    </div>
+</script>
+@*DatetimeGroup*@
+<script type="text/html" id="DateTimeGroupParameter">
+    <span data-bind="text:Title"></span>
+    <div style="max-width:230px;">
+        <input type="text" class="form-control datetime-parameter" data-bind="datetimepicker:{},value:FirstValue" style="float: left;width: 110px;">
+
+        <input type="text" class="form-control datetime-parameter" data-bind="datetimepicker:{},value:SecondValue" style="width: 110px;">
+    </div>
+</script>
+@*String*@
+<script type="text/html" id="StringParameter">
+    <span data-bind="text:Title"></span>
+    <div style="max-width:120px;">
+        <input type="text" class="form-control" data-bind="value:Selected">
+    </div>
+</script>
+@*Array*@
+<script type="text/html" id="ArrayParameter">
+    <span data-bind="text:Title"></span>
+    <div class="form-group" style="min-width:120px" data-bind='template: { name:"ArrayParameter_"+ElementTemplate(), data:$data}'>
+
+    </div>
+</script>
+<script type="text/html" id="ArrayParameter_Single">
+    <select class="form-select array-parameter-select" data-bind='MetadataArrayParameterBinder:Data(),value:Selected,attr:{id:ElementId}'></select>
+</script>
+<script type="text/html" id="ArrayParameter_Multiple">
+    <div class="form-group">
+        <select class="form-select array-parameter-select" 
+                data-is-autocomplete="false"
+                data-tags="true" 
+                multiple data-bind='MetadataArrayParameterBinder:Data(),selectedOptions:Selected,attr:{id:ElementId}'></select>
+    </div>
+</script>
+@*ReadOnly*@
+<script type="text/html" id="ReadonlyParameter">
+    <input type="hidden" data-bind="value:ReadonlyValue" />
+</script>
+@*List*@
+<script type="text/html" id="ListParameter">
+    <span data-bind="text:Title"></span>
+    <div class="form-group" style="min-width:120px">
+        <select class="form-select list-parameter-select" data-bind='options:Items,optionsText: "Title",optionsValue:"Name",value:Selected,optionsCaption:"Seçiniz"'></select>
+    </div>
+</script>
+@*Definition*@
+<script type="text/html" id="DefinitionParameter">
+    <span data-bind="text:Title"></span>
+    <div style="min-width:120px">
+        <div class="form-group">
+            <select class="form-select definition-parameter-select" multiple data-bind='options:DefinitionAllTypes,optionsText: "Text",optionsValue:"Value",selectedOptions:Selected,attr:{id:ElementId}'></select>
+        </div>
+    </div>
+</script>
+@*Destination*@
+<script type="text/html" id="DestinationParameter">
+    <span data-bind="text:Title"></span>
+    <div style="min-width:120px" class="form-group">
+        <select class="form-select destination-plugin js-example-responsive" multiple data-bind='selectedOptions:Selected,options:Items,optionsText: "Text",optionsValue:"Value",
+                attr:{"data-filter":Filter,"data-is-single":"false","data-filter-type":DestinationTypes,"data-type":"autocomplete",id:ElementId}'></select>
+    </div>
+</script>
+@*EqualityList*@
+<script type="text/html" id="EqualityListParameter">
+    <span data-bind="text:Title"></span>
+    <div style="min-width:120px" class="form-group">
+        <select class="form-select list-parameter-select" data-bind='options:Items,optionsCaption:"Seçiniz",optionsText: "Title",optionsValue:"Name",selectedOptions:Selected'></select>
+    </div>
+</script>
+
+@*BooleanList*@
+<script type="text/html" id="BooleanListParameter">
+    <span data-bind="text:Title"></span>
+    <div style="min-width:120px" class="form-group">
+        <select class="form-select list-parameter-select" data-bind='options:Items,optionsText: "Title",optionsValue:"Name",value:Selected,optionsCaption:"Seçiniz"'></select>
+    </div>
+</script>

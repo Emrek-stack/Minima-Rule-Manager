@@ -27,7 +27,7 @@
             <select class="form-control custom-select2 metadataselect statement-metadata"
                     data-dropdown-css-class="datatable-select"
                     data-dropdown-auto-width="true"
-                    data-bind='options: $root.RuleModel.Metadatas,optionsText: "Title",optionsValue:"Id",optionsCaption:"Seçiniz",value:MetadataId,event:{ change: $parentContext.$parent.Change},attr:{id:StatementKey}'></select>
+                    data-bind='options: Metadatas,optionsText: "Title",optionsValue:"Id",optionsCaption:"Seçiniz",value:MetadataId,event:{ change: $parentContext.$parent.Change},attr:{id:StatementKey}'></select>
         </div>
     </div>
     <!-- ko foreach:Parameters-->

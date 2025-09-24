@@ -108,6 +108,7 @@
                     <h5>Rule Actions</h5>
                 </div>
                 <div class="card-body">
+                    <button type="button" class="btn btn-primary" onclick="addSampleRule()">Add Sample Rule</button>
                     <button type="button" class="btn btn-success" onclick="saveRule()">Save Rule</button>
                     <button type="button" class="btn btn-info" onclick="validateRule()">Validate Rule</button>
                     <button type="button" class="btn btn-warning" onclick="testRule()">Test Rule</button>
@@ -132,8 +133,9 @@
 </div>
 
 @section Scripts {
-    <link href="~/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/5.0.8/jquery.inputmask.min.js"></script>
     <script>
         // Select2 CSS fix
         if (typeof $.fn.select2 !== 'undefined') {
@@ -144,6 +146,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/mode-csharp.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/theme-monokai.min.js"></script>
+    <script src="~/js/theme-rule.js"></script>
+    <script src="~/js/mode-rule-csharp.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.min.css" rel="stylesheet" />
@@ -228,6 +232,22 @@
                        console.log("Result manager:", ruleManager ? ruleManager.Result : "Not found");
                        console.log("Rules metadatas:", ruleManager && ruleManager.Rules ? ruleManager.Rules.Metadatas() : "Not found");
                        console.log("Result metadatas:", ruleManager && ruleManager.Result ? ruleManager.Result.Metadatas() : "Not found");
+                       
+                       // Rule değişikliklerini dinle ve editöre yansıt
+                       if (ruleManager && ruleManager.Rules) {
+                           ruleManager.Rules.TreeItems.subscribe(function() {
+                               setTimeout(function() {
+                                   updateEditorWithGeneratedCode();
+                                   updateRuleJson();
+                               }, 100);
+                           });
+                           
+                           // İlk yüklemede editörü güncelle
+                           setTimeout(function() {
+                               updateEditorWithGeneratedCode();
+                               updateRuleJson();
+                           }, 1000);
+                       }
                    }
             
             prepareData = function (options) {
@@ -248,7 +268,9 @@
                    }
                    
                    // Initialize ACE Editor
-                   initializeAceEditor();
+                   setTimeout(function() {
+                       initializeAceEditor();
+                   }, 500);
                });
         
         function saveRule() {
@@ -312,6 +334,16 @@
             }
         }
         
+        function addSampleRule() {
+            if (ruleManager && ruleManager.Rules) {
+                ruleManager.Rules.Add();
+                setTimeout(function() {
+                    updateEditorWithGeneratedCode();
+                    updateRuleJson();
+                }, 100);
+            }
+        }
+        
         function updateRuleJson() {
             if (ruleManager && ruleManager.Rules) {
                 var ruleData = ruleManager.Rules.Serialize();
@@ -329,21 +361,147 @@
         
                // Update JSON when rules change
                ko.bindingHandlers.sortable.afterMove = function() {
-                   setTimeout(updateRuleJson, 100);
+                   setTimeout(function() {
+                       updateRuleJson();
+                       updateEditorWithGeneratedCode();
+                   }, 100);
                };
                
                // ACE Editor Functions
                function initializeAceEditor() {
                    if (typeof ace !== 'undefined') {
                        var editor = ace.edit("editor");
-                       editor.setTheme("ace/theme/monokai");
-                       editor.session.setMode("ace/mode/csharp");
-                       editor.setValue("// C# Rule Code\n// Bu alan rule'ın C# kodunu gösterir\n\npublic class RuleResult\n{\n    public bool Success { get; set; }\n    public string Message { get; set; }\n    public object Data { get; set; }\n}");
+                       editor.setTheme("ace/theme/rule");
+                       editor.session.setMode("ace/mode/rule-csharp");
+                       editor.setValue("// C# Rule Code\n// Bu alan rule'ın C# kodunu gösterir\n// Rule oluşturulduğunda buraya kod yansıyacak\n\npublic class RuleResult\n{\n    public bool Success { get; set; }\n    public string Message { get; set; }\n    public object Data { get; set; }\n}");
                        
                        editor.getSession().on('change', function () {
                            $("#ExpressionStringText").val(editor.getSession().getValue());
                        });
+                       
+                       // Rule değiştiğinde editöre kod yansıtma
+                       if (ruleManager && ruleManager.Rules) {
+                           ruleManager.Rules.TreeItems.subscribe(function() {
+                               setTimeout(function() {
+                                   updateEditorWithGeneratedCode();
+                                   updateRuleJson();
+                               }, 100);
+                           });
+                           
+                           // İlk yüklemede editörü güncelle
+                           setTimeout(function() {
+                               updateEditorWithGeneratedCode();
+                               updateRuleJson();
+                           }, 1000);
+                       }
                    }
+               }
+               
+               function updateEditorWithGeneratedCode() {
+                   try {
+                       if (ruleManager && ruleManager.Rules && typeof ace !== 'undefined') {
+                           var editor = ace.edit("editor");
+                           if (editor) {
+                               var generatedCode = generateCSharpCode();
+                               editor.setValue(generatedCode);
+                               console.log("Editor updated with generated code:", generatedCode);
+                           }
+                       }
+                   } catch (error) {
+                       console.error("Error updating editor:", error);
+                   }
+               }
+               
+               function generateCSharpCode() {
+                   if (!ruleManager || !ruleManager.Rules) {
+                       return "// Rule manager henüz yüklenmedi";
+                   }
+                   
+                   var ruleData = ruleManager.Rules.Serialize();
+                   if (!ruleData || !ruleData.TreeItems || ruleData.TreeItems.length === 0) {
+                       return "// Henüz rule oluşturulmadı\n// Sol panelden rule ekleyin\n\npublic class GeneratedRule\n{\n    public bool Evaluate(object input)\n    {\n        // Rule logic buraya gelecek\n        return false;\n    }\n}";
+                   }
+                   
+                   var code = "// Otomatik oluşturulan C# Rule Kodu\n";
+                   code += "// Oluşturulma Tarihi: " + new Date().toLocaleString() + "\n\n";
+                   code += "public class GeneratedRule\n{\n";
+                   code += "    public bool Evaluate(object input)\n";
+                   code += "    {\n";
+                   code += "        // Rule Logic\n";
+                   
+                   ruleData.TreeItems.forEach(function(rule, index) {
+                       if (rule.Type === "RuleTreeStatement" && rule.Children) {
+                           code += "        // Rule " + (index + 1) + "\n";
+                           code += "        if (" + generateConditionCode(rule.Children) + ")\n";
+                           code += "        {\n";
+                           code += "            return true;\n";
+                           code += "        }\n";
+                       }
+                   });
+                   
+                   code += "        return false;\n";
+                   code += "    }\n";
+                   code += "}\n\n";
+                   code += "// Rule JSON Data:\n";
+                   code += "/*\n" + JSON.stringify(ruleData, null, 2) + "\n*/";
+                   
+                   return code;
+               }
+               
+               function generateConditionCode(children) {
+                   if (!children || children.length === 0) {
+                       return "true";
+                   }
+                   
+                   var conditions = [];
+                   var operators = [];
+                   
+                   for (var i = 0; i < children.length; i++) {
+                       var child = children[i];
+                       if (child.Type === "NamedRuleStatement") {
+                           conditions.push(generateNamedRuleCondition(child));
+                       } else if (child.Type === "AndOperatorStatement" || child.Type === "OrOperatorStatement") {
+                           operators.push(child.Parameters[0] === "&&" ? "&&" : "||");
+                       }
+                   }
+                   
+                   if (conditions.length === 1) {
+                       return conditions[0];
+                   }
+                   
+                   var result = conditions[0];
+                   for (var i = 1; i < conditions.length; i++) {
+                       var op = operators[i - 1] || "&&";
+                       result += " " + op + " " + conditions[i];
+                   }
+                   
+                   return result;
+               }
+               
+               function generateNamedRuleCondition(statement) {
+                   if (!statement.Name) {
+                       return "false";
+                   }
+                   
+                   var condition = "";
+                   switch (statement.Name) {
+                       case "AmountGreaterThan":
+                           condition = "input.Amount > " + (statement.Parameters[0] || "0");
+                           break;
+                       case "CustomerType":
+                           condition = "input.CustomerType == \"" + (statement.Parameters[0] || "Standard") + "\"";
+                           break;
+                       case "IsVip":
+                           condition = "input.IsVip == " + (statement.Parameters[0] || "false");
+                           break;
+                       case "OrderDate":
+                           condition = "input.OrderDate > DateTime.Parse(\"" + (statement.Parameters[0] || DateTime.Now.ToString()) + "\")";
+                           break;
+                       default:
+                           condition = "input." + statement.Name + " != null";
+                   }
+                   
+                   return condition;
                }
                
                function addFormatToEditor() {

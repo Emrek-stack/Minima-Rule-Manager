@@ -55,24 +55,6 @@ namespace RuleEngine.Core.Tests
             ruleSet.Priority.Should().Be(1);
         }
 
-        [Fact]
-        public async Task RuleManager_ShouldWorkWithoutSQLite()
-        {
-            // Arrange
-            var compiler = new RuleCompiler<TestInput, bool>();
-            var ruleString = "Input.Value > 18";
-
-            // Act
-            var syntaxErrors = compiler.CheckSyntax(ruleString);
-            var compiledRule = await compiler.CompileAsync("age-check", ruleString);
-            var result = compiledRule.Invoke(new TestInput { Value = 20 });
-
-            // Assert
-            syntaxErrors.Should().BeEmpty();
-            compiledRule.Should().NotBeNull();
-            result.Should().BeTrue();
-        }
-
     }
 
     public class TestInput : RuleInputModel

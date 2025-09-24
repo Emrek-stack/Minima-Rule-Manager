@@ -1,7 +1,7 @@
 @model RuleEngine.Mvc.ViewModels.ResultPanelViewModel
 
 <style>
-    .item-handle {
+    .result-item .item-handle {
         position: absolute;
         top: 50%;
         z-index: 2;
@@ -10,15 +10,15 @@
         transform: translateY(-50%);
     }
 
-    .rule-item-sub-group {
+    .result-item-sub-group {
         position: relative;
     }
 
-    .rule-item-sub-group {
+    .result-item-sub-group {
         margin-left: 30px;
     }
 
-    .rule-container {
+    .result-container {
         margin-left: 15px;
     }
 
@@ -26,11 +26,11 @@
         border: 2px dotted #eaa3a3;
     }
 
-    .rule-item-sub-group .rule-container {
+    .result-item-sub-group .result-container {
         margin-left: 20px;
     }
 
-    .drag-handle {
+    .result-item .drag-handle {
         position: absolute;
         top: 0;
         left: 10px;
@@ -41,9 +41,11 @@
     }
 
     .metadataselect {
-        width: 120px !important;
+        width: 120px;
     }
-
+    .statement-metadata{
+        width:150px !important;
+    }
     .parameter-item {
         margin-left: 10px;
     }
@@ -65,36 +67,27 @@
                 color: #fd6d6d;
                 cursor: pointer;
             }
-            
-    .grd-form-group {
-        margin-bottom: 15px;
+    .select2-container--open {
+        background-color: #FFFEDA;
+        width: auto !important;
+    }
+    .datatable-select .select2-results__option {
+        color: #999;
+        min-width: 150px !important;
+        background-color: #fff;
     }
     
-    .grd-label {
-        font-weight: bold;
-        color: #333;
-        margin-bottom: 5px;
-    }
-    
-    .bottom-20 {
-        margin-bottom: 20px;
-    }
 </style>
 
-<h2 class="tab-title">Sonuç</h2>
-<div class="pill"></div>
-<div class="row bottom-20" data-bind="with:ResultModel" id="RuleResultPanel">
-    <div class="col-lg-6 col-md-6 col-sm-12">
-        <div class="form-group grd-form-group">
-            <label class="control-label grd-label">Sonuç</label>
-            <select class="form-control custom-select2" data-bind='options:Metadatas,optionsText: "Title",optionsValue:"Id",optionsCaption:"Seçiniz",value:MetadataId,event:{ change: Change}'></select>
-        </div>
-    </div> 
-    <!-- ko foreach:TreeItems-->
-    <div data-bind="template: { name:'ResultItemTemplate', data:$data}" class="col-lg-12 col-md-12 col-sm-12"></div>
-    <!-- /ko --> 
-</div> 
+<h2 class="tab-title">@Model.Title</h2>
 
-@{
-    Html.RenderPartial("_RuleTemplates");
-}
+<div class="row bottom-40" data-bind="with:ResultModel" id="@Model.ResultPanelId">
+    <div data-bind="sortable:{foreach: TreeItems, options: {handle: '.drag-handle', draggable: '.result-item',animation: 150,onEnd:BindPlugins,ghostClass:'drag-placeholder'}}" class="results col-lg-12">
+        <div class="result result-item" data-bind="click:$parent.SetActive">
+            <div data-bind="template: { name:TemplateName, data:$data }"> </div>
+        </div>
+    </div>
+    <div class="">
+        <a class="btn btn-success btn-sm crt-result-btn" data-bind="click:Add">Yeni Sonuç Oluştur</a>
+    </div>
+</div>

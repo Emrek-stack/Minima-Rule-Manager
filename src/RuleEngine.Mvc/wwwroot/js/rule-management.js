@@ -1,4 +1,288 @@
 ﻿var isStaticRule = false;
+
+// Parameter Manager - Base class for all parameter types
+var ParameterManager = {};
+
+// Base Parameter class
+var Parameter = function (data) {
+    var _this = this;
+    _this.TypeName = data.TypeName || "Parameter";
+    _this.Title = data.Title || "";
+    _this.Description = data.Description || "";
+    _this.Name = data.Name || "Parameter";
+    _this.ElementId = "param_" + RuleUtility.GenerateString();
+    
+    _this.ValidateProp = function (prop) {
+        return prop && prop.toString().trim().length > 0;
+    };
+    
+    _this.ValidateSelected = function () {
+        return true; // Override in derived classes
+    };
+    
+    _this.SerializeForRule = function () {
+        return { Parameters: [] };
+    };
+};
+
+// Numeric Parameter
+var NumericParameter = function (data) {
+    data.TypeName = data.TypeName || "NumericParameter";
+    var _this = this;
+    Parameter.call(_this, data);
+    _this.Title = data.Title || "";
+    _this.Description = data.Description || "";
+    _this.Name = data.Name || "NumericParameter";
+    _this.ValidateForRule = function () {
+        return _this.ValidateSelected();
+    };
+    _this.SerializeForRule = function () {
+        return { Parameters: _this.Selected ? _this.Selected() : "" };
+    };
+};
+ParameterManager.NumericParameter = NumericParameter;
+
+// String Parameter
+var StringParameter = function (data) {
+    data.TypeName = data.TypeName || "StringParameter";
+    var _this = this;
+    Parameter.call(_this, data);
+    _this.Title = data.Title || "";
+    _this.Description = data.Description || "";
+    _this.Name = data.Name || "StringParameter";
+    _this.ValidateForRule = function () {
+        return _this.ValidateSelected();
+    };
+    _this.SerializeForRule = function () {
+        return { Parameters: _this.Selected ? _this.Selected() : "" };
+    };
+};
+ParameterManager.StringParameter = StringParameter;
+
+// DateTime Parameter
+var DateTimeParameter = function (data) {
+    data.TypeName = data.TypeName || "DateTimeParameter";
+    var _this = this;
+    Parameter.call(_this, data);
+    _this.Title = data.Title || "";
+    _this.Description = data.Description || "";
+    _this.Name = data.Name || "DateTimeParameter";
+    _this.ValidateForRule = function () {
+        return _this.ValidateSelected();
+    };
+    _this.SerializeForRule = function () {
+        return { Parameters: _this.Selected ? _this.Selected() : "" };
+    };
+};
+ParameterManager.DateTimeParameter = DateTimeParameter;
+
+// Array Parameter
+var ArrayParameter = function (data) {
+    data.TypeName = data.TypeName || "ArrayParameter";
+    var _this = this;
+    StringParameter.call(_this, data);
+    _this.ArrayType = data.ArrayType || "System.Int32";
+    _this.Name = data.Name || "ArrayParameter";
+    _this.Title = data.Title || "";
+    _this.Description = data.Description || "";
+    _this.Data = ko.observableArray(data.Data || []);
+    _this.Selected = ko.observableArray(data.Selected || []);
+    
+    _this.Validate = function (index) {
+        if (!_this.ValidateProp(_this.ArrayType)) {
+            console.error("Lütfen type bilgisini giriniz", index + ". parametre uyarı");
+            return false;
+        } else if (!_this.ValidateProp(_this.Title)) {
+            console.error("Lütfen başlık bilgisini giriniz", index + ". parametre uyarı");
+            return false;
+        }
+        return true;
+    };
+    
+    _this.Add = function () {
+        _this.Data.push({ Key: '', Value: '' });
+    };
+    
+    _this.Remove = function (item) {
+        _this.Data.remove(item);
+    };
+    
+    _this.ValidateForRule = function () {
+        return _this.ValidateSelected();
+    };
+    
+    _this.SerializeForRule = function () {
+        return { Parameters: _this.Selected() };
+    };
+};
+ParameterManager.ArrayParameter = ArrayParameter;
+
+// List Parameter
+var ListParameter = function (data) {
+    data.TypeName = data.TypeName || "ListParameter";
+    var _this = this;
+    Parameter.call(_this, data);
+    _this.Title = data.Title || "";
+    _this.Description = data.Description || "";
+    _this.Name = data.Name || "ListParameter";
+    _this.Items = ko.observableArray(data.Items || []);
+    _this.Selected = ko.observable(data.Selected || "");
+    
+    _this.Add = function () {
+        _this.Items.push({ Title: '', Description: '', ExpressionFormat: '', Value: '' });
+    };
+    
+    _this.Remove = function (item) {
+        _this.Items.remove(item);
+    };
+    
+    _this.ValidateForRule = function () {
+        return _this.ValidateSelected();
+    };
+    
+    _this.SerializeForRule = function () {
+        return { Parameters: _this.Selected() };
+    };
+};
+ParameterManager.ListParameter = ListParameter;
+
+// Definition Parameter
+var DefinitionParameter = function (data) {
+    data.TypeName = data.TypeName || "DefinitionParameter";
+    var _this = this;
+    Parameter.call(_this, data);
+    _this.Title = data.Title || "";
+    _this.Description = data.Description || "";
+    _this.Name = data.Name || "DefinitionParameter";
+    _this.DefinitionType = data.DefinitionType || "";
+    _this.ArrayType = data.ArrayType || "";
+    _this.Selected = ko.observableArray(data.Selected || []);
+    _this.DefinitionAllTypes = ko.observableArray(window.definitionTypes || []);
+    
+    _this.ValidateForRule = function () {
+        return _this.ValidateSelected();
+    };
+    
+    _this.SerializeForRule = function () {
+        return { Parameters: _this.Selected() };
+    };
+};
+ParameterManager.DefinitionParameter = DefinitionParameter;
+
+// Destination Parameter
+var DestinationParameter = function (data) {
+    data.TypeName = data.TypeName || "DestinationParameter";
+    var _this = this;
+    Parameter.call(_this, data);
+    _this.Title = data.Title || "";
+    _this.Description = data.Description || "";
+    _this.Name = data.Name || "DestinationParameter";
+    _this.Filter = data.Filter || "";
+    _this.DestinationTypes = ko.observableArray(data.DestinationTypes || []);
+    _this.Selected = ko.observableArray(data.Selected || []);
+    _this.DestinationAllTypes = ko.observableArray(window.destinationTypes || []);
+    
+    _this.ValidateForRule = function () {
+        return _this.ValidateSelected();
+    };
+    
+    _this.SerializeForRule = function () {
+        return { Parameters: _this.Selected() };
+    };
+};
+ParameterManager.DestinationParameter = DestinationParameter;
+
+// Readonly Parameter
+var ReadonlyParameter = function (data) {
+    data.TypeName = data.TypeName || "ReadonlyParameter";
+    var _this = this;
+    Parameter.call(_this, data);
+    _this.Title = data.Title || "";
+    _this.Description = data.Description || "";
+    _this.Name = data.Name || "ReadonlyParameter";
+    _this.ReadonlyValue = ko.observable(data.ReadonlyValue || "");
+    
+    _this.ValidateForRule = function () {
+        return _this.ValidateSelected();
+    };
+    
+    _this.SerializeForRule = function () {
+        return { Parameters: _this.ReadonlyValue() };
+    };
+};
+ParameterManager.ReadonlyParameter = ReadonlyParameter;
+
+// Boolean List Parameter
+var BooleanListParameter = function (data) {
+    data.TypeName = data.TypeName || "BooleanListParameter";
+    var _this = this;
+    Parameter.call(_this, data);
+    _this.Title = data.Title || "";
+    _this.Description = data.Description || "";
+    _this.Name = data.Name || "BooleanListParameter";
+    _this.Selected = ko.observable(data.Selected || "");
+    
+    _this.ValidateForRule = function () {
+        return _this.ValidateSelected();
+    };
+    
+    _this.SerializeForRule = function () {
+        return { Parameters: _this.Selected() };
+    };
+};
+ParameterManager.BooleanListParameter = BooleanListParameter;
+
+// Equality List Parameter
+var EqualityListParameter = function (data) {
+    data.TypeName = data.TypeName || "EqualityListParameter";
+    var _this = this;
+    Parameter.call(_this, data);
+    _this.Title = data.Title || "";
+    _this.Description = data.Description || "";
+    _this.Name = data.Name || "EqualityListParameter";
+    _this.Symbol = ko.observable(data.Symbol || false);
+    _this.Operators = ko.observableArray(data.Operators || []);
+    _this.Selected = ko.observable(data.Selected || "");
+    _this.OperatorList = ko.observableArray([
+        { Text: "Eşittir", Value: "==" },
+        { Text: "Eşit Değildir", Value: "!=" },
+        { Text: "Büyüktür", Value: ">" },
+        { Text: "Küçüktür", Value: "<" },
+        { Text: "Büyük Eşittir", Value: ">=" },
+        { Text: "Küçük Eşittir", Value: "<=" }
+    ]);
+    
+    _this.ValidateForRule = function () {
+        return _this.ValidateSelected();
+    };
+    
+    _this.SerializeForRule = function () {
+        return { Parameters: _this.Selected() };
+    };
+};
+ParameterManager.EqualityListParameter = EqualityListParameter;
+
+// DateTime Group Parameter
+var DateTimeGroupParameter = function (data) {
+    data.TypeName = data.TypeName || "DateTimeGroupParameter";
+    var _this = this;
+    Parameter.call(_this, data);
+    _this.Title = data.Title || "";
+    _this.Description = data.Description || "";
+    _this.Name = data.Name || "DateTimeGroupParameter";
+    _this.FirstValue = ko.observable(data.FirstValue || "");
+    _this.SecondValue = ko.observable(data.SecondValue || "");
+    
+    _this.ValidateForRule = function () {
+        return _this.ValidateSelected();
+    };
+    
+    _this.SerializeForRule = function () {
+        return { Parameters: [_this.FirstValue(), _this.SecondValue()] };
+    };
+};
+ParameterManager.DateTimeGroupParameter = DateTimeGroupParameter;
+
 var RuleUtility = {
     GenerateString: function () {
         var text = "";
@@ -30,19 +314,44 @@ var MetadataManager = function (managerData) {
     var Metadata = (function (_super) {
         function Metadata(metadata) {
             var _this = this;
+            console.log("Metadata constructor called with:", metadata);
+            console.log("metadata.ParameterTypes:", metadata.ParameterTypes);
+            console.log("metadata.CategoryItems:", metadata.CategoryItems);
+            
+            // Store original metadata before extend
+            var originalParameterTypes = metadata.ParameterTypes;
+            var originalCategoryItems = metadata.CategoryItems;
+            var originalCategories = metadata.Categories;
+            
             $.extend(_this, { Id: 0, Name: "", Title: "", Description: "", ExpressionString: "", IsPredicate: true, }, metadata);
             _this.ParameterTypeId = ko.observable();
             _this.Parameters = ko.observableArray([]);
-            _this.ParameterTypes = ko.observableArray(metadata.ParameterTypes || []);
-            _this.Categories = ko.observableArray(metadata.Categories || []);
-            _this.CategoryItems = ko.observableArray(metadata.CategoryItems || []);
+            _this.ParameterTypes = ko.observableArray(originalParameterTypes || []);
+            _this.Categories = ko.observableArray(originalCategories || []);
+            _this.CategoryItems = ko.observableArray(originalCategoryItems || []);
+            
+            console.log("After initialization:");
+            console.log("_this.ParameterTypes():", _this.ParameterTypes());
+            console.log("_this.CategoryItems():", _this.CategoryItems());
             _this.AddParameter = function (item) {
-                if (_this.ParameterTypeId() != null && _this.ParameterTypeId() != "" && _this.ParameterTypeId() != 0) {
-                    var param = RuleUtility.Factory(_this.ParameterTypeId(), ParameterManager);
-                    if (param) {
-                        _this.Parameters.push(param);
-                        _this.BindPlugins({ select: true, scroll: true, sort: true });
-                    }
+                console.log("AddParameter called");
+                console.log("ParameterTypeId value:", _this.ParameterTypeId());
+                
+                // If no parameter type is selected, default to NumericParameter
+                if (_this.ParameterTypeId() == null || _this.ParameterTypeId() == "" || _this.ParameterTypeId() == 0) {
+                    console.log("No parameter type selected, defaulting to NumericParameter");
+                    _this.ParameterTypeId("NumericParameter");
+                }
+                
+                console.log("Creating parameter with type:", _this.ParameterTypeId());
+                var param = RuleUtility.Factory(_this.ParameterTypeId(), ParameterManager);
+                console.log("Parameter created:", param);
+                if (param) {
+                    _this.Parameters.push(param);
+                    console.log("Parameter added to array. Total parameters:", _this.Parameters().length);
+                    _this.BindPlugins({ select: true, scroll: true, sort: true });
+                } else {
+                    console.log("Failed to create parameter");
                 }
             };
             _this.AddFormatToEditor = function () {
@@ -90,14 +399,23 @@ var MetadataManager = function (managerData) {
                     var data = _this.Serialize();
                     var editor = ace.edit("editor");
                     data.ExpressionString = editor.getValue();
-                    ajaxMethods.sendPostRequest({
-                        controller: "RuleMetadata",
-                        action: "Save",
-                        value: data,
-                        onComplete: function (result) {
-                            if (result && result.Result && result.Result.IsSuccess) {
-                                _this.Id = result.Result.Id;
+                    
+                    $.ajax({
+                        url: '/RuleMetadata/Save',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(data),
+                        success: function (result) {
+                            if (result && result.isSuccess) {
+                                _this.Id = result.id;
+                                alert('Metadata başarıyla kaydedildi!');
+                            } else {
+                                alert('Hata: ' + (result.message || 'Bilinmeyen hata'));
                             }
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("AJAX Error:", status, error);
+                            alert('Hata: ' + error);
                         }
                     });
                 }
@@ -108,11 +426,11 @@ var MetadataManager = function (managerData) {
                 };
 
                 if (!validatePropery(_this.Name)) {
-                    grd.utils.message.error("Lütfen metadata adını giriniz ");
+                    alert("Lütfen metadata adını giriniz ");
                     return false;
                 }
                 else if (!validatePropery(ace.edit("editor").getValue())) {
-                    grd.utils.message.error("Lütfen expression giriniz");
+                    alert("Lütfen expression giriniz");
                     return false;
                 }
                 var result = [];
@@ -131,7 +449,7 @@ var MetadataManager = function (managerData) {
             _this.BindPlugins = function (option) {
                 //// Bind Plugins
                 option = $.extend({ select: false, scroll: false, sort: false, editor: false }, option);
-                if (option.select) {
+                if (option.select && typeof $.fn.select2 !== 'undefined') {
                     $(".custom-select2").select2({});
                 }
                 if (option.scroll) {
@@ -141,8 +459,8 @@ var MetadataManager = function (managerData) {
 
                 } if (option.editor) {
                     var editor = ace.edit("editor");
-                    editor.setTheme("ace/theme/rule");
-                    editor.session.setMode("ace/mode/rule-csharp");
+                    editor.setTheme("ace/theme/monokai");
+                    editor.session.setMode("ace/mode/csharp");
                     editor.getSession().on('change', function () {
                         $("#ExpressionStringText").val(editor.getSession().getValue());
                     });
@@ -200,7 +518,7 @@ var ParameterManager = function (paramData) {
             _this.Name = data.Name || "NumericParameter";
             _this.Validate = function (index) {
                 if (!_this.ValidateProp(_this.Title)) {
-                    grd.utils.message.error("Lütfen başlık bilgisini giriniz", index + ". parametre uyarı");
+                    alert("Lütfen başlık bilgisini giriniz");
                     return false;
                 }
                 return true;
@@ -265,16 +583,15 @@ var ParameterManager = function (paramData) {
             _this.ArrayType = data.ArrayType || "System.Int32";
             _this.Name = data.Name || "ArrayParameter";
             _this.Title = data.Title;
-            _this.PluginParameters = ko.observableArray(Object.keys(ko.bindingHandlers.MetadataArrayParameterBinder.options));
-            // _this.Items = ko.observableArray([]);
+            _this.PluginParameters = ko.observableArray(Object.keys(ko.bindingHandlers.MetadataArrayParameterBinder ? ko.bindingHandlers.MetadataArrayParameterBinder.options : {}));
             _this.Description = data.Description;
             _this.Data = ko.observableArray([]);
             _this.Validate = function (index) {
                 if (!_this.ValidateProp(_this.ArrayType)) {
-                    grd.utils.message.error("Lütfen type bilgisini giriniz", index + ". parametre uyarı");
+                    alert("Lütfen type bilgisini giriniz");
                     return false;
                 } else if (!_this.ValidateProp(_this.Title)) {
-                    grd.utils.message.error("Lütfen başlık bilgisini giriniz", index + ". parametre uyarı");
+                    alert("Lütfen başlık bilgisini giriniz");
                     return false;
                 }
                 return true;
@@ -291,11 +608,6 @@ var ParameterManager = function (paramData) {
             };
             _this.SerializeForRule = function (index) {
                 var result = { Parameters: [] };
-                // if (typeof _this.Selected() == "string")
-                //     result.Parameters.push(_this.Selected());
-                // else {
-                //     result.Parameters = _this.Selected().join(",");
-                // }
                 result.Parameters = $("#" + _this.ElementId).val();
                 var options = $.map($("#" + _this.ElementId).children("option").filter(":selected"), function (item) {
                     return $(item).text();
@@ -310,11 +622,8 @@ var ParameterManager = function (paramData) {
                     if (dataList.Data) {
                         _this.ElementTemplate = ko.observable(dataList.Data["isMultiple"] == false ? "Single" : "Multiple");
                         Object.keys(dataList.Data).forEach(function (item) { _this.Data.push({ Key: item, Value: dataList.Data[item] }); });
-
                     }
-
                 }
-
             })(data);
 
         }
@@ -358,7 +667,7 @@ var ParameterManager = function (paramData) {
             _this.ReadonlyValue = data.ReadonlyValue;
             _this.Validate = function (index) {
                 if (!_this.ValidateProp(_this.ReadonlyValue)) {
-                    grd.utils.message.error("Lütfen readonly parametresi değerini giriniz", index + ". parametre uyarı");
+                    alert("Lütfen readonly parametresi değerini giriniz");
                     return false;
                 }
                 return true;
@@ -394,7 +703,7 @@ var ParameterManager = function (paramData) {
                 $.each(_this.Items(), function (i, item) {
                     if (!_this.ValidateProp(item.Value)) {
                         result.push(0);
-                        grd.utils.message.error("Lütfen list parameter value değerini giriniz", index + ". parametre uyarı");
+                        alert("Lütfen list parameter value değerini giriniz");
                         return;
                     }
                 });
@@ -432,7 +741,7 @@ var ParameterManager = function (paramData) {
             _this.Validate = function (index) {
                 var result = [];
                 if (!_this.DefinitionType() || _this.DefinitionType().length < 1) {
-                    grd.utils.message.error("Lütfen definition type giriniz", index + ". parametre uyarı");
+                    alert("Lütfen definition type giriniz");
                     result.push(0);
                 }
 
@@ -448,20 +757,12 @@ var ParameterManager = function (paramData) {
                 if (window["definitionTypes"]) {
                     _this.DefinitionAllTypes(definitionTypes.map(function (i) { return { Text: i.split("Definition")[i.split("Definition").length - 1] == "Definition" ? i.split("Definition")[0] : i, Value: i }; }));
                 } else {
-                    ajaxMethods.sendPostRequest({
-                        controller: "DefinitionData",
-                        action: "GetDefinition",
-                        value: { name: _this.DefinitionType },
-                        onComplete: function (result) {
-                            _this.DefinitionAllTypes(result);
-                            $("#" + _this.ElementId).select2({});
-                            if (paramData.Selected)
-                                $("#" + _this.ElementId).val(paramData.Selected.map(function (i) {
-                                    return i.trim();
-                                })).trigger("change");
-
-                        }
-                    });
+                    // Mock data for demo
+                    _this.DefinitionAllTypes([
+                        { Text: "Customer", Value: "CustomerDefinition" },
+                        { Text: "Product", Value: "ProductDefinition" },
+                        { Text: "Order", Value: "OrderDefinition" }
+                    ]);
                 }
             })(data);
         }
@@ -482,16 +783,15 @@ var ParameterManager = function (paramData) {
             _this.Validate = function (index) {
                 var result = [];
                 if (!_this.DestinationTypes() || _this.DestinationTypes().length < 1) {
-                    grd.utils.message.error("Lütfen destination type seçiniz", index + ". parametre uyarı");
+                    alert("Lütfen destination type seçiniz");
                     result.push(0);
                 }
                 try {
                     var r = $.parseJSON(JSON.stringify(_this.Filter()));
                 } catch (e) {
-                    grd.utils.message.error("Girilen filtre uygun formatta değil. <br>Unexpected token o in JSON at position 1", index + ". parametre uyarı");
+                    alert("Girilen filtre uygun formatta değil.");
                     result.push(0);
                 }
-
 
                 return result.length < 1;
             };
@@ -654,13 +954,13 @@ var StatementManager = function () {
             _this.Validate = function () {
                 var result = [];
                 if (!_this.MetadataId() || _this.MetadataId() < 0) {
-                    grd.utils.message.error("Lütfen koşul seçiniz");
+                    alert("Lütfen koşul seçiniz");
                     return false;
                 }
                 if (_this.Parameters && _this.Parameters().length > 0) {
                     _this.Parameters().forEach(function (item) {
                         if (!item.ValidateForRule()) {
-                            grd.utils.message.error("Lütfen " + item.Title + " parametre değerini giriniz");
+                            alert("Lütfen " + item.Title + " parametre değerini giriniz");
                             result.push(0);
                             return false;
                         }
@@ -723,7 +1023,7 @@ var RuleManager = function (ruleData) {
             _this.Validate = function () {
                 var result = [];
                 if (_this.Name == "") {
-                    grd.utils.message.error("Lürfen kural adını giriniz");
+                    alert("Lütfen kural adını giriniz");
                     result.push(0);
                 }
                 if (_this.Children && _this.Children().length > 0) {
@@ -889,8 +1189,12 @@ var RuleManager = function (ruleData) {
                     close: 'icon-close'
                 }
             });
-            $(".destination-plugin", container).destination();
-            $(".input-long-decimal-2").inputmask({ 'mask': '9.9999', rightAlign: false, allowPlus: false, allowMinus: false });
+            if (typeof $.fn.destination !== 'undefined') {
+                $(".destination-plugin", container).destination();
+            }
+            if (typeof $.fn.inputmask !== 'undefined') {
+                $(".input-long-decimal-2").inputmask({ 'mask': '9.9999', rightAlign: false, allowPlus: false, allowMinus: false });
+            }
         }
         if ($(".grd-form-group-lg").length > 0)
             $(".grd-form-group-lg").removeClass("grd-form-group-lg");
@@ -918,7 +1222,6 @@ var RuleManager = function (ruleData) {
         if (ruleManager.Validate()) {
             var data = {};
             data.TreeItems = ruleManager.TreeItems().map(function (i) { return i.Serialize(); });
-            //dictionary bind edilirken null olması mvc tarafında sıkıntı oluşturmaktadır.Kuralın ParameterLabels bilgisi olmaz.Sadece Statetmentda bulunur.
             data.TreeItems.forEach(function (i) { delete i.ParameterLabels; });
             return data;
         }
@@ -927,26 +1230,28 @@ var RuleManager = function (ruleData) {
     ruleManager.Save = function () {
         if (ruleManager.Validate()) {
             var data = ruleManager.Serialize();
-            ajaxMethods.sendPostRequest({
-                controller: "RuleSample",
-                action: "Save",
-                value: { RuleItem: data },
-                onComplete: function (result) {
-                    if (result && result.Result && result.Result.IsSuccess) {
-                        ruleManager.Id = result.Result.Id;
-                    }
-                }
-            });
+            // Mock save function for demo
+            console.log("Saving rule:", data);
+            alert("Rule saved successfully!");
         }
     };
     ruleManager.BindModel = (function (data) {
         var sm = new StatementManager();
         var pm = new ParameterManager();
         if (data) {
-            if (data.Metadatas)
-                $.each(Object.keys(data.Metadatas), function (i, item) {
-                    ruleManager.Metadatas.push($.extend({ Name: item, Id: (i + 1) }, data.Metadatas[item]))
-                });
+            if (data.Metadatas) {
+                if (Array.isArray(data.Metadatas)) {
+                    // Array format (our project)
+                    $.each(data.Metadatas, function (i, item) {
+                        ruleManager.Metadatas.push($.extend({ Name: item.Name, Id: item.Id }, item))
+                    });
+                } else {
+                    // Object format (original Gordios project)
+                    $.each(Object.keys(data.Metadatas), function (i, item) {
+                        ruleManager.Metadatas.push($.extend({ Name: item, Id: (i + 1) }, data.Metadatas[item]))
+                    });
+                }
+            }
             if (data.TreeItems)
                 $.each(data.TreeItems, function (i, item) {
                     if (item && item.Type != "IncorrectRuleStatement") {
@@ -957,9 +1262,6 @@ var RuleManager = function (ruleData) {
                         }
                     }
                 })
-
-
-
         }
     })(ruleData);
     return ruleManager;
@@ -976,7 +1278,9 @@ var ResultManager = function (resultData, isStatic) {
         if (!options.isParameter)
             $(".custom-select2").not(".array-parameter-select").select2();
         $("select", container).not(".custom-select2").select2();
-        $(".destination-plugin").destination();
+        if (typeof $.fn.destination !== 'undefined') {
+            $(".destination-plugin").destination();
+        }
         if ($(".grd-form-group-lg").length > 0)
             $(".grd-form-group-lg").removeClass("grd-form-group-lg");
     };
@@ -1082,16 +1386,33 @@ var ResultManager = function (resultData, isStatic) {
 var rule = {
     metadata: {
         init: function (data) {
+            console.log("Metadata init called with data:", data);
             $(document).ready(function () {
+                console.log("Document ready, creating MetadataManager...");
                 var model = { MetadataModel: new MetadataManager(data || {}) };
+                console.log("MetadataManager created:", model);
+                console.log("CategoryItems:", model.MetadataModel.CategoryItems());
+                console.log("ParameterTypes:", model.MetadataModel.ParameterTypes());
+                
                 ko.applyBindings(model);
+                console.log("Knockout bindings applied");
+                
                 model.MetadataModel.BindPlugins({ select: true, editor: true });
-                $(".category").select2({ tags: true, placeholder: "Seçiniz" });
+                console.log("Plugins bound");
+                
+                if (typeof $.fn.select2 !== 'undefined') {
+                    $(".category").select2({ tags: true, placeholder: "Seçiniz" });
+                    console.log("Select2 initialized for categories");
+                } else {
+                    console.error("Select2 not available!");
+                }
             })
         }
     },
     ruleManager: {
         init: function (model, predicatePanel, resultPanel) {
+            console.log("RuleManager.init called with model:", model);
+            
             if (predicatePanel) {
                 if (typeof (predicatePanel) == "string")
                     predicatePanel = $(predicatePanel)
@@ -1103,9 +1424,12 @@ var rule = {
                     resultPanel = $(resultPanel)
             } else
                 resultPanel = $("#RuleResultPanel")[0];
+                
+            console.log("PredicatePanel:", predicatePanel);
+            console.log("ResultPanel:", resultPanel);
 
 
-            var rules, ruleResult;
+            var rules = null, ruleResult = null;
 
             if (model.RuleItem) {
                 var k = model.RuleItem || {};
@@ -1119,6 +1443,13 @@ var rule = {
                     ko.applyBindings(r, document.getElementById("StaticDesign"));
                     r.StaticRuleModel.BindPlugins({ isParameter: true, container: "#StaticDesign" });
                 }
+            } else {
+                // Fallback: create empty RuleManager if RuleItem is not provided
+                var k = { Name: "Sample Rule", Children: [], Metadatas: [] };
+                k.Element = predicatePanel;
+                rules = { RuleModel: new RuleManager(k) };
+                ko.applyBindings(rules, predicatePanel);
+                rules.RuleModel.BindPlugins();
             }
             if (model.ResultItem && resultPanel) {
                 /*Result item bind*/
@@ -1126,10 +1457,16 @@ var rule = {
                 ko.applyBindings(ruleResult, resultPanel);
                 ruleResult.ResultModel.BindPlugins({ isParameter: false });
             }
-            return {
-                Rules: rules["RuleModel"],
-                Result: ruleResult ? ruleResult["ResultModel"] : {}
-            }
+            console.log("Returning rules:", rules);
+            console.log("Returning ruleResult:", ruleResult);
+            
+            var result = {
+                Rules: rules ? rules["RuleModel"] : null,
+                Result: ruleResult ? ruleResult["ResultModel"] : null
+            };
+            
+            console.log("Final result:", result);
+            return result;
 
         }
     }

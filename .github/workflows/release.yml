@@ -152,3 +152,7 @@ jobs:
       run: |
         echo "❌ Release ${{ needs.create-release.outputs.version }} failed!"
         exit 1
+
+
+
+

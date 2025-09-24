@@ -77,36 +77,6 @@
         background-color: #fff;
     }
     
-    .icon-cancel:before { content: "✕"; }
-    .icon-add_circle:before { content: "+"; }
-    .icon-menu:before { content: "☰"; }
-    
-    .rule-item {
-        position: relative;
-        border: 1px solid #ddd;
-        margin: 10px 0;
-        padding: 15px;
-        background: #f9f9f9;
-        border-radius: 5px;
-    }
-    
-    .rule-number {
-        font-weight: bold;
-        color: #333;
-    }
-    
-    .sort-group {
-        margin-left: 30px;
-    }
-    
-    .select-wrapper {
-        display: inline-block;
-        margin-left: 10px;
-    }
-    
-    .crt-rule-btn {
-        margin-top: 20px;
-    }
 </style>
 
 <h2 class="tab-title">@Model.Title</h2>
@@ -118,10 +88,6 @@
         </div>
     </div>
     <div class="">
-        <a class="btn grd-btn tertiary-action small crt-rule-btn" data-bind="click:Add">Yeni Kural Oluştur</a>
+        <a class="btn btn-primary btn-sm crt-rule-btn" data-bind="click:Add">Yeni Kural Oluştur</a>
     </div>
 </div>
-
-@{
-    Html.RenderPartial("_RuleTemplates");
-}
