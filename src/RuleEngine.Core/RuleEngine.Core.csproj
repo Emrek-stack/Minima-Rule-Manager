@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PackageId>Minima.RuleEngine.Core</PackageId>
-    <Version>1.0.1</Version>
+    <Version>1.0.3</Version>
     <Authors>RuleEngine Team</Authors>
-    <Description>A modern, extensible rule engine for .NET 8 with C# expression evaluation using Roslyn.</Description>
+    <Description>A modern, extensible rule engine for .NET 8/9/10 with C# expression evaluation using Roslyn.</Description>
     <PackageProjectUrl>https://github.com/Emrek-stack/Minima-Rule-Manager</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Emrek-stack/Minima-Rule-Manager</RepositoryUrl>
     <PackageTags>rule-engine;rules;expression;evaluation;roslyn;csharp</PackageTags>

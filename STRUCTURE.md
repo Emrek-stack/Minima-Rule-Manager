@@ -56,8 +56,9 @@ CampaignEngine.Example
 ## 📦 NuGet Paketleri
 
 ### Üretilen Paketler
-- `Minima.RuleEngine.Core` (v1.0.1)
-- `Minima.CampaignEngine.Core` (v1.0.0) ⭐ YENİ
+- `Minima.RuleEngine.Core` (v1.0.3) - .NET 8.0, 9.0 & 10.0 ⭐
+- `Minima.RuleEngine.Sqlite` (v1.0.3) - .NET 8.0, 9.0 & 10.0 ⭐
+- `Minima.CampaignEngine.Core` (v1.0.2) - .NET 8.0, 9.0 & 10.0 ⭐
 
 ### Bağımlılıklar
 - Microsoft.CodeAnalysis.CSharp.Scripting 4.8.0

@@ -72,9 +72,9 @@ var campaign = new GeneralCampaign
 var campaigns = campaignManager.GetCampaign(input);
 ```
 
-## 📋 Gereksinimler
+## 📦 Gereksinimler
 
-- .NET 8.0 veya üzeri
+- .NET 8.0, .NET 9.0 veya .NET 10.0
 - Microsoft.CodeAnalysis.CSharp.Scripting 4.8.0
 - Microsoft.Extensions.DependencyInjection 8.0.0
 - Microsoft.Extensions.Logging 8.0.0

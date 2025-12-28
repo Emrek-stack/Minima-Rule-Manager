@@ -21,13 +21,13 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PackageId>Minima.RuleEngine.Sqlite</PackageId>
-    <Version>1.0.1</Version>
+    <Version>1.0.3</Version>
     <Authors>RuleEngine Team</Authors>
-    <Description>SQLite persistence provider for RuleEngine with Entity Framework Core integration.</Description>
+    <Description>SQLite persistence provider for RuleEngine with Entity Framework Core integration for .NET 8/9/10.</Description>
     <PackageProjectUrl>https://github.com/Emrek-stack/Minima-Rule-Manager</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Emrek-stack/Minima-Rule-Manager</RepositoryUrl>
     <PackageTags>rule-engine;sqlite;entity-framework;persistence;database</PackageTags>
