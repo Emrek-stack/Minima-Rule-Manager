@@ -8,40 +8,12 @@ import Avatar from 'primevue/avatar'
 import Badge from 'primevue/badge'
 import Tag from 'primevue/tag'
 import Chip from 'primevue/chip'
-import Divider from 'primevue/divider'
-import Card from 'primevue/card'
 import RuleManagerPage from './pages/RuleManagerPage.vue'
 import CampaignManagerPage from './pages/CampaignManagerPage.vue'
 
 const activePage = ref<'rules' | 'campaigns'>('rules')
 
 const menuItems = [
-  {
-    label: 'Getting Started',
-    icon: 'pi pi-home',
-    items: [
-      { label: 'Introduction', icon: 'pi pi-book' },
-      { label: 'Setup', icon: 'pi pi-sliders-h' },
-      { label: 'Playground', icon: 'pi pi-sparkles' }
-    ]
-  },
-  {
-    label: 'Installation',
-    icon: 'pi pi-download',
-    items: [
-      { label: 'CLI', icon: 'pi pi-terminal' },
-      { label: 'VS Code', icon: 'pi pi-desktop' },
-      { label: 'CLI Scripts', icon: 'pi pi-code' }
-    ]
-  },
-  {
-    label: 'Configuration',
-    icon: 'pi pi-cog',
-    items: [
-      { label: 'Theme', icon: 'pi pi-palette' },
-      { label: 'Locale', icon: 'pi pi-globe' }
-    ]
-  },
   {
     label: 'Rule Management',
     icon: 'pi pi-sitemap',
@@ -55,15 +27,6 @@ const menuItems = [
     command: () => {
       activePage.value = 'campaigns'
     }
-  },
-  {
-    label: 'Components',
-    icon: 'pi pi-th-large',
-    items: [
-      { label: 'Forms', icon: 'pi pi-list' },
-      { label: 'Tables', icon: 'pi pi-table' },
-      { label: 'Icons', icon: 'pi pi-star' }
-    ]
   }
 ]
 
@@ -84,7 +47,7 @@ const pageSubtitle = computed(() =>
       <div class="brand">
         <div class="brand-mark">PV</div>
         <div>
-          <div class="brand-title">PrimeVue</div>
+          <div class="brand-title">RuleManager</div>
           <div class="brand-sub">Rule & Campaign Studio</div>
         </div>
       </div>
@@ -126,34 +89,5 @@ const pageSubtitle = computed(() =>
       </main>
     </div>
 
-    <aside class="app-rail">
-      <div class="rail-section">
-        <div class="rail-title">On this page</div>
-        <Divider />
-        <div class="rail-links">
-          <Button label="Introduction" text class="rail-link" />
-          <Button label="Installation" text class="rail-link" />
-          <Button label="Configuration" text class="rail-link" />
-          <Button label="Components" text class="rail-link" />
-          <Button label="Examples" text class="rail-link" />
-        </div>
-      </div>
-
-      <Card class="promo-card">
-        <template #title>
-          Campaign Spotlight
-        </template>
-        <template #subtitle>
-          End of year savings
-        </template>
-        <template #content>
-          <div class="promo-body">
-            <div class="promo-banner">SALE 25% OFF</div>
-            <p>Use code <strong>RULE25</strong> at checkout.</p>
-            <Button label="Launch Campaign" icon="pi pi-bolt" />
-          </div>
-        </template>
-      </Card>
-    </aside>
   </div>
 </template>

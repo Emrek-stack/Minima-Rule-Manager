@@ -17,7 +17,7 @@ body {
 
 .app-shell {
   display: grid;
-  grid-template-columns: 250px minmax(0, 1fr) 260px;
+  grid-template-columns: 250px minmax(0, 1fr);
   gap: 1.5rem;
   padding: 1.5rem;
 }
@@ -136,55 +136,6 @@ body {
 
 .version-chip {
   background: rgba(15, 23, 42, 0.05);
-}
-
-.app-rail {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.rail-section {
-  background: #ffffff;
-  border: 1px solid var(--surface-border);
-  border-radius: 16px;
-  padding: 1.25rem;
-  box-shadow: 0 18px 30px rgba(16, 24, 40, 0.08);
-}
-
-.rail-title {
-  font-weight: 600;
-  font-size: 0.95rem;
-}
-
-.rail-links {
-  display: grid;
-  gap: 0.5rem;
-}
-
-.rail-link {
-  justify-content: flex-start;
-  padding-left: 0;
-}
-
-.promo-card {
-  border-radius: 16px;
-  box-shadow: 0 18px 30px rgba(16, 24, 40, 0.08);
-}
-
-.promo-body {
-  display: grid;
-  gap: 0.75rem;
-}
-
-.promo-banner {
-  display: inline-flex;
-  padding: 0.4rem 0.75rem;
-  border-radius: 999px;
-  font-weight: 600;
-  background: rgba(99, 102, 241, 0.12);
-  color: #1f2937;
-  width: fit-content;
 }
 
 .page-body {
@@ -375,10 +326,6 @@ body {
 
   .app-sidebar {
     position: static;
-  }
-
-  .app-rail {
-    grid-column: 1 / -1;
   }
 }
 
