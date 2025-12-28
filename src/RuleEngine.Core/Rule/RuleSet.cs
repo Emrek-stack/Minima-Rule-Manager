@@ -40,7 +40,9 @@ namespace RuleEngine.Core.Rule
         /// </summary>
         public RuleSet()
         {
-
+            Code = null!;
+            PredicateRule = null!;
+            ResultRule = null!;
         }
         /// <summary>
         /// Kural setini oluşturan base ctor.
@@ -147,7 +149,7 @@ namespace RuleEngine.Core.Rule
             try
             {
                 var result = ResultRule.Invoke(input);
-                return availableResults.FirstOrDefault(r => r.Equals(result)) ?? result;
+                return availableResults.FirstOrDefault(r => r!.Equals(result)) ?? result;
             }
             catch (Exception e)
             {

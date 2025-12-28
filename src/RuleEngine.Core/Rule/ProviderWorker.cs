@@ -15,7 +15,6 @@ namespace RuleEngine.Core.Rule
     public abstract class ProviderWorker
     {
         protected int _initialized = 0;
-        private DateTime _lastDeleteTime;
 
         public abstract Task ProcessAsync();
 
@@ -56,7 +55,7 @@ namespace RuleEngine.Core.Rule
         where TRuleSet : RuleSet<TInput, TOutput>
         where TInput : RuleInputModel
     {
-        private int _initialized;
+        private new int _initialized;
 
         public bool Initialized => _initialized > 0;
 
@@ -92,7 +91,7 @@ namespace RuleEngine.Core.Rule
                 var isExistDic = await _provider.IsExistsAsync(RuleSets.Keys.ToArray());
                 foreach (var deletedKey in isExistDic.Where(kv => !kv.Value).Select(kv => kv.Key))
                 {
-                    RuleSets.TryRemove(deletedKey, out TRuleSet _);
+                    RuleSets.TryRemove(deletedKey, out _);
                 }
 
                 //değişenleri alalım.
@@ -115,7 +114,7 @@ namespace RuleEngine.Core.Rule
 
         private static readonly SemaphoreSlim _waitSemaphore = new SemaphoreSlim(1);
 
-        public void WaitInitialization()
+        public new void WaitInitialization()
         {
             if (Initialized)
                 return;

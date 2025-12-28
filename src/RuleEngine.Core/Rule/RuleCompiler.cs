@@ -66,7 +66,7 @@ namespace RuleEngine.Core.Rule
             extraTypeList.AddRange(InputPropertyTypes);
             extraTypeList.AddRange(extraTypeList.SelectMany(t => GetAllBaseTypes(t)).ToList());
             _namespaces = RuleCompilerGlobals.Namespaces
-                .Concat(extraTypeList.Select(t => t.Namespace))
+                .Concat(extraTypeList.Select(t => t.Namespace).OfType<string>())
                 .Distinct().ToList();
             _references = RuleCompilerGlobals.References
                 .Concat(extraTypeList.Select(t => t.Assembly))
@@ -133,7 +133,7 @@ namespace RuleEngine.Core.Rule
         public async Task<CompiledRule<TInput, TReturn>> CompileAsync(string ruleName,
             string ruleString, params Type[] extraTypes)
         {
-            return (await CompileAsync(ruleName, new List<string> { ruleString }, extraTypes)).FirstOrDefault();
+            return (await CompileAsync(ruleName, new List<string> { ruleString }, extraTypes)).FirstOrDefault() ?? throw new InvalidOperationException("Compilation failed");
         }
 
         /// <summary>
@@ -148,7 +148,7 @@ namespace RuleEngine.Core.Rule
             if (ruleStrings == null)
                 throw new ArgumentNullException(nameof(ruleStrings));
 
-            string ruleBodyString = null;
+            string? ruleBodyString = null;
             try
             {
                 var extraNamespaces = new List<string>();
@@ -156,7 +156,7 @@ namespace RuleEngine.Core.Rule
                 var extraRuleHeader = "";
                 if (extraTypes != null && extraTypes.Any())
                 {
-                    extraNamespaces = extraTypes.Select(t => t.Namespace).Distinct().ToList();
+                    extraNamespaces = extraTypes.Select(t => t.Namespace).OfType<string>().ToList();
                     extraReferences = extraTypes.Select(t => t.Assembly).Distinct().ToList();
                     extraRuleHeader = "\r\n///Added for only this compilation:\r\n///using " + string.Join(";\r\n///using ", _namespaces) + ";";
                 }
@@ -181,7 +181,7 @@ namespace RuleEngine.Core.Rule
             }
             catch (Exception e)
             {
-                throw new RuleCompilingException(e, ruleBodyString);
+                throw new RuleCompilingException(e, ruleBodyString ?? string.Empty);
             }
         }
 

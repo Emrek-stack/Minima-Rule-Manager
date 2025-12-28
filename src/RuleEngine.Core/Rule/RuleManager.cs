@@ -25,7 +25,7 @@ namespace RuleEngine.Core.Rule
                     p =>
                     {
                         var newProviderWorker = new ProviderWorker<TRuleSet, TInput, TOutput>(provider);
-                        newProviderWorker.ProcessAsync();
+                        _ = newProviderWorker.ProcessAsync();
                         return newProviderWorker;
                     })
                 as ProviderWorker<TRuleSet, TInput, TOutput>;
@@ -161,7 +161,7 @@ namespace RuleEngine.Core.Rule
             {
                 return _genericGetProviderWorkerMethod.MakeGenericMethod(types);
             });
-            return method.Invoke(null, new[] { ruleProvider }) as ProviderWorker;
+            return method.Invoke(null, new[] { ruleProvider }) as ProviderWorker ?? throw new InvalidOperationException("Failed to get provider worker");
         }
 
         public static void WaitInitialization(this IRuleProvider ruleProvider)

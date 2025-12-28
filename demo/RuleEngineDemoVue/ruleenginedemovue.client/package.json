@@ -15,6 +15,8 @@
     "lint": "eslint . --fix --cache"
   },
   "dependencies": {
+    "primeicons": "^7.0.0",
+    "primevue": "^3.49.1",
     "vue": "^3.5.26"
   },
   "devDependencies": {

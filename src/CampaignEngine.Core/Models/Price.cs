@@ -11,7 +11,7 @@ namespace CampaignEngine.Core.Models
     public struct Price : IEquatable<Price>, IComparable<Price>
     {
         public decimal Value { get; set; }
-        private string _currency;
+        private string _currency = string.Empty;
 
         public string Currency
         {
@@ -20,7 +20,7 @@ namespace CampaignEngine.Core.Models
             {
                 if (value != null && value.Length != 3)
                     throw new ArgumentException("The currency must be in ISO 4217 format (3 chars length)", nameof(Currency));
-                _currency = value;
+                _currency = value ?? string.Empty;
             }
         }
 
@@ -68,20 +68,20 @@ namespace CampaignEngine.Core.Models
 
         public bool Equals(Price other) => this == other;
         public int CompareTo(Price other) => Currency != other.Currency ? throw new ArgumentException("Cannot compare prices with different currencies") : Value.CompareTo(other.Value);
-        public override bool Equals(object obj) => obj is Price price && Equals(price);
+        public override bool Equals(object? obj) => obj is Price price && Equals(price);
         public override int GetHashCode() => HashCode.Combine(Value, Currency);
 
-        public static Price Zero => new Price(0, null);
+        public static Price Zero => new Price { Value = 0, _currency = string.Empty };
 
         internal class PriceJsonConverter : JsonConverter
         {
             public override bool CanConvert(Type objectType) => objectType == typeof(Price);
-            public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+            public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
             {
                 var priceStr = serializer.Deserialize<string>(reader);
                 return priceStr == null ? Zero : FromString(priceStr);
             }
-            public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer) => writer.WriteValue(value.ToString());
+            public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer) => writer.WriteValue(value?.ToString());
         }
     }
 }

@@ -13,11 +13,15 @@ namespace RuleEngine.Core.Models
     {
         public CompiledRule()
         {
-
+            Invoke = null!;
+            Expression = null!;
+            RuleString = null!;
         }
 
         public CompiledRule(ScriptRunner<TReturn> scriptRunner)
         {
+            Expression = null!;
+            RuleString = null!;
             Invoke = input =>
             {
                 var globals = new GlobalRuleParams<TInput> { Model = input };
@@ -27,6 +31,8 @@ namespace RuleEngine.Core.Models
 
         public CompiledRule(Func<TInput, TReturn> invoke, DateTime compileTime)
         {
+            Expression = null!;
+            RuleString = null!;
             Invoke = invoke;
             CompileTime = compileTime;
         }
@@ -55,9 +61,6 @@ namespace RuleEngine.Core.Models
     /// <typeparam name="TInput"></typeparam>
     public class GlobalRuleParams<TInput>
     {
-        /// <summary>
-        /// kural içinden erişilen model özelliği
-        /// </summary>
-        public TInput Model;
+        public TInput Model = default!;
     }
 }
