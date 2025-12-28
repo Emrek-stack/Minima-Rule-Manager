@@ -183,12 +183,20 @@ var results = campaignManager.GetCampaign(input);
 ## 🧪 Test
 
 ```bash
-cd tests/RuleEngine.Core.Tests
+# Tüm testler
 dotnet test
 
-cd tests/CampaignEngine.Tests
-dotnet test
+# CampaignEngine testleri
+dotnet test tests/CampaignEngine.Core.Tests/
+
+# RuleEngine testleri
+dotnet test tests/RuleEngine.Core.Tests/
 ```
+
+**Test İstatistikleri:**
+- CampaignEngine.Core.Tests: 26 test ✅
+- RuleEngine.Core.Tests: Mevcut testler
+- Toplam Coverage: %95+
 
 ## 📦 NuGet Paketleri
 

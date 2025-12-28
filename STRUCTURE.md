@@ -28,7 +28,15 @@ RuleEngine/
 │
 ├── tests/
 │   ├── RuleEngine.Core.Tests/
-│   └── RuleEngine.Integration.Tests/
+│   ├── RuleEngine.Integration.Tests/
+│   └── CampaignEngine.Core.Tests/      # ⭐ Kampanya testleri (YENİ)
+│       ├── PriceTests.cs               # Price model testleri
+│       ├── CampaignManagerTests.cs     # Manager testleri
+│       ├── RepositoryTests.cs          # Repository testleri
+│       ├── CacheTests.cs               # Cache testleri
+│       ├── ExtensionTests.cs           # Extension testleri
+│       ├── IntegrationTests.cs         # Integration testleri
+│       └── README.md                   # Test dokümantasyonu
 │
 └── README.md                          # Ana dokümantasyon
 ```
