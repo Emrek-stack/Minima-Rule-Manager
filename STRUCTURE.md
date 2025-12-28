@@ -1,47 +1,47 @@
-# Proje Yapısı
+# Project Structure
 
-## 📁 Dizin Yapısı
+## 📁 Directory Structure
 
 ```
 RuleEngine/
 ├── src/
-│   ├── RuleEngine.Core/              # Kural motoru çekirdeği
-│   │   ├── Rule/                     # Kural yönetimi (RuleManager, RuleCompiler, RuleSet)
-│   │   ├── Models/                   # Veri modelleri (CompiledRule, RuleInputModel)
-│   │   ├── Abstractions/             # Interface'ler (IRuleProvider, IRuleRepository)
-│   │   └── Extensions/               # Extension metodlar
+│   ├── RuleEngine.Core/              # Rule engine core
+│   │   ├── Rule/                     # Rule management (RuleManager, RuleCompiler, RuleSet)
+│   │   ├── Models/                   # Data models (CompiledRule, RuleInputModel)
+│   │   ├── Abstractions/             # Interfaces (IRuleProvider, IRuleRepository)
+│   │   └── Extensions/               # Extension methods
 │   │
-│   ├── CampaignEngine.Core/          # ⭐ Kampanya motoru (YENİ)
-│   │   ├── Models/                   # Kampanya modelleri (GeneralCampaign, Price)
-│   │   ├── Abstractions/             # Interface'ler (ICampaignRepository, ITravelProduct)
-│   │   ├── Cache/                    # Önbellek sağlayıcıları (MemoryCacheProvider)
-│   │   ├── Repositories/             # Veri erişim (InMemoryCampaignRepository)
-│   │   ├── Extensions/               # Extension metodlar (ServiceCollectionExtensions)
-│   │   ├── CampaignManager.cs        # Ana kampanya yöneticisi
-│   │   └── README.md                 # Detaylı dokümantasyon
+│   ├── CampaignEngine.Core/          # ⭐ Campaign engine (NEW)
+│   │   ├── Models/                   # Campaign models (GeneralCampaign, Price)
+│   │   ├── Abstractions/             # Interfaces (ICampaignRepository, ITravelProduct)
+│   │   ├── Cache/                    # Cache providers (MemoryCacheProvider)
+│   │   ├── Repositories/             # Data access (InMemoryCampaignRepository)
+│   │   ├── Extensions/               # Extension methods (ServiceCollectionExtensions)
+│   │   ├── CampaignManager.cs        # Main campaign manager
+│   │   └── README.md                 # Detailed documentation
 │   │
-│   ├── RuleEngine.Sqlite/            # SQLite implementasyonu
+│   ├── RuleEngine.Sqlite/            # SQLite implementation
 │   └── RuleEngine.Mvc/               # Web UI
 │
 ├── examples/
-│   └── CampaignEngine.Example/       # ⭐ Kampanya örneği (YENİ)
+│   └── CampaignEngine.Example/       # ⭐ Campaign example (NEW)
 │
 ├── tests/
 │   ├── RuleEngine.Core.Tests/
 │   ├── RuleEngine.Integration.Tests/
-│   └── CampaignEngine.Core.Tests/      # ⭐ Kampanya testleri (YENİ)
-│       ├── PriceTests.cs               # Price model testleri
-│       ├── CampaignManagerTests.cs     # Manager testleri
-│       ├── RepositoryTests.cs          # Repository testleri
-│       ├── CacheTests.cs               # Cache testleri
-│       ├── ExtensionTests.cs           # Extension testleri
-│       ├── IntegrationTests.cs         # Integration testleri
-│       └── README.md                   # Test dokümantasyonu
+│   └── CampaignEngine.Core.Tests/      # ⭐ Campaign tests (NEW)
+│       ├── PriceTests.cs               # Price model tests
+│       ├── CampaignManagerTests.cs     # Manager tests
+│       ├── RepositoryTests.cs          # Repository tests
+│       ├── CacheTests.cs               # Cache tests
+│       ├── ExtensionTests.cs           # Extension tests
+│       ├── IntegrationTests.cs         # Integration tests
+│       └── README.md                   # Test documentation
 │
-└── README.md                          # Ana dokümantasyon
+└── README.md                          # Main documentation
 ```
 
-## 🔗 Proje Bağımlılıkları
+## 🔗 Project Dependencies
 
 ```
 CampaignEngine.Core
@@ -53,57 +53,57 @@ CampaignEngine.Example
     └── CampaignEngine.Core
 ```
 
-## 📦 NuGet Paketleri
+## 📦 NuGet Packages
 
-### Üretilen Paketler
+### Published Packages
 - `Minima.RuleEngine.Core` (v1.0.3) - .NET 8.0, 9.0 & 10.0 ⭐
 - `Minima.RuleEngine.Sqlite` (v1.0.3) - .NET 8.0, 9.0 & 10.0 ⭐
 - `Minima.CampaignEngine.Core` (v1.0.2) - .NET 8.0, 9.0 & 10.0 ⭐
 
-### Bağımlılıklar
-- Microsoft.CodeAnalysis.CSharp.Scripting 4.8.0
-- Microsoft.Extensions.DependencyInjection 8.0.0
-- Microsoft.Extensions.Logging 8.0.0
-- Microsoft.Extensions.Caching.Memory 8.0.0
+### Dependencies
+- Microsoft.CodeAnalysis.CSharp.Scripting 4.14.0
+- Microsoft.Extensions.DependencyInjection 8.0.0+
+- Microsoft.Extensions.Logging 8.0.0+
+- Microsoft.Extensions.Caching.Memory 8.0.1+
 - Newtonsoft.Json 13.0.3
 
-## 🎯 Temel Sınıflar
+## 🎯 Core Classes
 
 ### RuleEngine.Core
 
 #### RuleManager
-- Kural setlerini provider bazında yönetir
-- Background processing ile otomatik güncelleme
-- Thread-safe operasyonlar
+- Manages rule sets by provider
+- Background processing with automatic updates
+- Thread-safe operations
 
 #### RuleCompiler<TInput, TReturn>
-- C# expression'larını derler
-- Roslyn kullanarak runtime compilation
-- Syntax kontrolü
+- Compiles C# expressions
+- Runtime compilation using Roslyn
+- Syntax validation
 
 #### RuleSet<TInput, TOutput>
-- Predicate (seçim) kuralı
-- Result (sonuç) kuralı
-- Priority (öncelik)
+- Predicate (selection) rule
+- Result (action) rule
+- Priority
 
 ### CampaignEngine.Core ⭐
 
 #### CampaignManager<TInput, TOutput>
-- Kampanya yönetimi
-- RuleEngine.Core entegrasyonu
-- Kural bazlı kampanya seçimi
+- Campaign management
+- RuleEngine.Core integration
+- Rule-based campaign selection
 
 #### GeneralCampaign
-- Kampanya entity modeli
-- Predicate, Result, Usage kuralları
-- Kota ve öncelik yönetimi
+- Campaign entity model
+- Predicate, Result, Usage rules
+- Quota and priority management
 
 #### Price
-- Para birimi desteği (ISO 4217)
-- Matematiksel operatörler
+- Currency support (ISO 4217)
+- Mathematical operators
 - JSON serialization
 
-## 🔄 Veri Akışı
+## 🔄 Data Flow
 
 ### RuleEngine
 ```
@@ -117,13 +117,13 @@ CampaignInput → CampaignManager → RuleProvider → RuleSet → CampaignOutpu
                                   ICampaignRepository
 ```
 
-## 🛠️ Genişletme Noktaları
+## 🛠️ Extension Points
 
 ### Custom Repository
 ```csharp
 public class MyCampaignRepository : ICampaignRepository
 {
-    // Kendi veri kaynağınızı kullanın
+    // Use your own data source
 }
 ```
 
@@ -131,7 +131,7 @@ public class MyCampaignRepository : ICampaignRepository
 ```csharp
 public class RedisCacheProvider : ICacheProvider
 {
-    // Redis veya başka cache sistemi
+    // Redis or other cache system
 }
 ```
 
@@ -139,25 +139,25 @@ public class RedisCacheProvider : ICacheProvider
 ```csharp
 public class MyRuleProvider : IRuleProvider<MyRuleSet, MyInput, MyOutput>
 {
-    // Özel kural sağlayıcı
+    // Custom rule provider
 }
 ```
 
-## 📊 Performans Özellikleri
+## 📊 Performance Features
 
-- **Compilation Cache**: Kurallar bir kez derlenir
-- **Memory Cache**: Sık kullanılan veriler cache'lenir
-- **Background Processing**: Kural güncellemeleri arka planda
-- **Thread-Safe**: ConcurrentDictionary kullanımı
-- **Lazy Loading**: İhtiyaç anında yükleme
+- **Compilation Cache**: Rules are compiled once
+- **Memory Cache**: Frequently used data is cached
+- **Background Processing**: Rule updates in the background
+- **Thread-Safe**: ConcurrentDictionary usage
+- **Lazy Loading**: Load on demand
 
-## 🔐 Güvenlik
+## 🔐 Security
 
 - Input validation
-- SQL injection koruması (parametreli sorgular)
-- Expression injection koruması
-- Kural syntax kontrolü
+- SQL injection protection (parameterized queries)
+- Expression injection protection
+- Rule syntax validation
 
-## 📝 Lisans
+## 📝 License
 
 MIT License

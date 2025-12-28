@@ -1,44 +1,44 @@
 # Multi-Targeting Support
 
-Tüm NuGet paketleri artık .NET 8.0, .NET 9.0 ve .NET 10.0 desteği ile geliyor.
+All NuGet packages now support .NET 8.0, .NET 9.0, and .NET 10.0.
 
-## 📦 Desteklenen Framework'ler
+## 📦 Supported Frameworks
 
-| Paket | .NET 8.0 | .NET 9.0 | .NET 10.0 | Versiyon |
-|-------|----------|----------|-----------|----------|
+| Package | .NET 8.0 | .NET 9.0 | .NET 10.0 | Version |
+|---------|----------|----------|-----------|---------|
 | **Minima.RuleEngine.Core** | ✅ | ✅ | ✅ | v1.0.3 |
 | **Minima.RuleEngine.Sqlite** | ✅ | ✅ | ✅ | v1.0.3 |
 | **Minima.CampaignEngine.Core** | ✅ | ✅ | ✅ | v1.0.2 |
 
-## 🚀 Kullanım
+## 🚀 Usage
 
-### .NET 8.0 Projesi
+### .NET 8.0 Project
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Minima.RuleEngine.Core" Version="1.0.2" />
-    <PackageReference Include="Minima.CampaignEngine.Core" Version="1.0.1" />
+    <PackageReference Include="Minima.RuleEngine.Core" Version="1.0.3" />
+    <PackageReference Include="Minima.CampaignEngine.Core" Version="1.0.2" />
   </ItemGroup>
 </Project>
 ```
 
-### .NET 9.0 Projesi
+### .NET 9.0 Project
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Minima.RuleEngine.Core" Version="1.0.2" />
-    <PackageReference Include="Minima.CampaignEngine.Core" Version="1.0.1" />
+    <PackageReference Include="Minima.RuleEngine.Core" Version="1.0.3" />
+    <PackageReference Include="Minima.CampaignEngine.Core" Version="1.0.2" />
   </ItemGroup>
 </Project>
 ```
 
-### .NET 10.0 Projesi
+### .NET 10.0 Project
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
@@ -51,7 +51,7 @@ Tüm NuGet paketleri artık .NET 8.0, .NET 9.0 ve .NET 10.0 desteği ile geliyor
 </Project>
 ```
 
-## 📊 NuGet Paket İçeriği
+## 📊 NuGet Package Contents
 
 ### Minima.RuleEngine.Core v1.0.3
 ```
@@ -86,9 +86,9 @@ lib/
     └── RuleEngine.Sqlite.dll
 ```
 
-## ✅ Test Sonuçları
+## ✅ Test Results
 
-Tüm testler .NET 8.0, 9.0 ve 10.0 için başarılı:
+All tests pass on .NET 8.0, 9.0, and 10.0:
 
 ```
 ✅ RuleEngine.Core.Tests: 5/5 passed
@@ -99,10 +99,10 @@ Tüm testler .NET 8.0, 9.0 ve 10.0 için başarılı:
 ## 🔧 Build
 
 ```bash
-# Tüm framework'ler için build
+# Build for all frameworks
 dotnet build --configuration Release
 
-# Belirli framework için build
+# Build for specific framework
 dotnet build --configuration Release --framework net8.0
 dotnet build --configuration Release --framework net9.0
 dotnet build --configuration Release --framework net10.0
@@ -111,24 +111,24 @@ dotnet build --configuration Release --framework net10.0
 ## 📦 NuGet Pack
 
 ```bash
-# Paketler otomatik oluşturulur
+# Packages are automatically created
 dotnet build --configuration Release
 
-# Manuel pack
+# Manual pack
 dotnet pack --configuration Release
 ```
 
-## 🎯 Avantajlar
+## 🎯 Advantages
 
-- ✅ Tek paket, çoklu framework desteği
-- ✅ Geriye dönük uyumluluk (.NET 8.0)
-- ✅ İleriye dönük uyumluluk (.NET 9.0 & 10.0)
-- ✅ Otomatik framework seçimi
-- ✅ Aynı API, farklı runtime'lar
+- ✅ Single package, multiple framework support
+- ✅ Backward compatibility (.NET 8.0)
+- ✅ Forward compatibility (.NET 9.0 & 10.0)
+- ✅ Automatic framework selection
+- ✅ Same API, different runtimes
 
-## 📝 Notlar
+## 📝 Notes
 
-- ✅ .NET 10.0 desteği eklendi!
-- Tüm paketler aynı API'yi kullanır
-- Framework-specific kod yok
-- Tüm özellikler her üç framework'te de çalışır
+- ✅ .NET 10.0 support added!
+- All packages use the same API
+- No framework-specific code
+- All features work on all three frameworks

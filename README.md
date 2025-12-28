@@ -4,64 +4,64 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![NuGet](https://img.shields.io/badge/NuGet-v1.0.3-blue)](https://www.nuget.org/)
 
-Modern, genişletilebilir ve yüksek performanslı kural motoru ve kampanya yönetim sistemi. Roslyn tabanlı C# expression değerlendirme ile dinamik iş kuralları oluşturun, SQLite veya özel repository'ler ile saklayın, kampanya sistemleri geliştirin.
+Modern, extensible, and high-performance rule engine and campaign management system. Create dynamic business rules with Roslyn-based C# expression evaluation, persist with SQLite or custom repositories, and build campaign systems.
 
-## 🌟 Neden RuleEngine?
+## 🌟 Why RuleEngine?
 
-- **🚀 Yüksek Performans**: Derlenmiş kurallar, cache mekanizması, background processing
-- **🔧 Kolay Entegrasyon**: Dependency Injection, ASP.NET Core desteği
-- **📦 Multi-Targeting**: .NET 8.0, 9.0 ve 10.0 desteği
-- **🎯 Esnek Mimari**: Provider pattern, custom repository desteği
-- **🔒 Güvenli**: Thread-safe operasyonlar, input validation
-- **📊 İzlenebilir**: Audit logging, execution history
+- **🚀 High Performance**: Compiled rules, caching mechanism, background processing
+- **🔧 Easy Integration**: Dependency Injection, ASP.NET Core support
+- **📦 Multi-Targeting**: .NET 8.0, 9.0, and 10.0 support
+- **🎯 Flexible Architecture**: Provider pattern, custom repository support
+- **🔒 Secure**: Thread-safe operations, input validation
+- **📊 Traceable**: Audit logging, execution history
 
-## 📦 Projeler
+## 📦 Projects
 
 ### RuleEngine.Core
-Roslyn tabanlı C# expression değerlendirme ile modern kural motoru.
+Modern rule engine with Roslyn-based C# expression evaluation.
 
-**Özellikler:**
-- ✅ C# expression desteği (Roslyn Scripting API)
-- ✅ Dinamik kural derleme ve önbellekleme
-- ✅ Thread-safe concurrent operasyonlar
-- ✅ Provider pattern ile genişletilebilir mimari
-- ✅ Background processing ile otomatik güncelleme
-- ✅ Memory cache desteği
-- ✅ Syntax validation ve error handling
-- ✅ Generic input/output modelleri
+**Features:**
+- ✅ C# expression support (Roslyn Scripting API)
+- ✅ Dynamic rule compilation and caching
+- ✅ Thread-safe concurrent operations
+- ✅ Extensible architecture with provider pattern
+- ✅ Background processing with automatic updates
+- ✅ Memory cache support
+- ✅ Syntax validation and error handling
+- ✅ Generic input/output models
 
 ### RuleEngine.Sqlite
-SQLite tabanlı persistence katmanı.
+SQLite-based persistence layer.
 
-**Özellikler:**
-- ✅ Entity Framework Core entegrasyonu
-- ✅ Kural versiyonlama ve rollback
+**Features:**
+- ✅ Entity Framework Core integration
+- ✅ Rule versioning and rollback
 - ✅ Execution audit logging
-- ✅ Migration ve seeding desteği
-- ✅ CRUD operasyonları
+- ✅ Migration and seeding support
+- ✅ CRUD operations
 
-### CampaignEngine.Core ⭐ YENİ
-RuleEngine.Core üzerine inşa edilmiş kampanya yönetim sistemi.
+### CampaignEngine.Core ⭐ NEW
+Campaign management system built on top of RuleEngine.Core.
 
-**Özellikler:**
-- ✅ Kural tabanlı kampanya sistemi
-- ✅ İndirim kampanyaları (yüzde/sabit tutar)
-- ✅ Ürün hediye kampanyaları
-- ✅ Kota yönetimi ve kullanım takibi
-- ✅ Öncelik bazlı kampanya seçimi
-- ✅ Memory cache desteği
+**Features:**
+- ✅ Rule-based campaign system
+- ✅ Discount campaigns (percentage/fixed amount)
+- ✅ Product gift campaigns
+- ✅ Quota management and usage tracking
+- ✅ Priority-based campaign selection
+- ✅ Memory cache support
 - ✅ Dependency Injection
-- ✅ Custom repository desteği
+- ✅ Custom repository support
 
-## 🚀 Hızlı Başlangıç
+## 🚀 Quick Start
 
-### RuleEngine Kullanımı
+### RuleEngine Usage
 
 ```csharp
 using RuleEngine.Core.Rule;
 using RuleEngine.Core.Models;
 
-// 1. Input/Output modellerini tanımlayın
+// 1. Define input/output models
 public class OrderInput : RuleInputModel
 {
     public decimal Amount { get; set; }
@@ -75,16 +75,16 @@ public class DiscountOutput
     public string Message { get; set; }
 }
 
-// 2. Kural derleyici oluşturun
+// 2. Create rule compiler
 var compiler = new RuleCompiler<OrderInput, bool>();
 
-// 3. Kuralı derleyin
+// 3. Compile the rule
 var rule = await compiler.CompileAsync(
     "vip-check", 
     "Input.Age > 18 && Input.CustomerType == \"VIP\""
 );
 
-// 4. Kuralı çalıştırın
+// 4. Execute the rule
 var input = new OrderInput 
 { 
     Age = 25, 
@@ -96,19 +96,19 @@ var result = rule.Invoke(input); // true
 Console.WriteLine($"Is VIP Adult: {result}");
 ```
 
-### CampaignEngine Kullanımı ⭐
+### CampaignEngine Usage ⭐
 
 ```csharp
 using CampaignEngine.Core;
 using CampaignEngine.Core.Models;
 using CampaignEngine.Core.Extensions;
 
-// 1. Service collection'a ekleyin
+// 1. Add to service collection
 services.AddCampaignEngine();
 services.AddLogging();
 services.AddMemoryCache();
 
-// 2. Input/Output modellerini tanımlayın
+// 2. Define input/output models
 public class CampaignInput : RuleInputModel
 {
     public decimal TotalAmount { get; set; }
@@ -118,10 +118,10 @@ public class CampaignInput : RuleInputModel
 
 public class CampaignOutput : CampaignEngine.Core.Models.CampaignOutput
 {
-    // TotalDiscount ve CampaignProductDiscount otomatik gelir
+    // TotalDiscount and CampaignProductDiscount are inherited
 }
 
-// 3. Campaign manager oluşturun
+// 3. Create campaign manager
 var campaignManager = new CampaignManager<CampaignInput, CampaignOutput>(
     moduleId: 1,
     serviceProvider: serviceProvider,
@@ -129,23 +129,23 @@ var campaignManager = new CampaignManager<CampaignInput, CampaignOutput>(
     typeof(Price) // Extra types for compilation
 );
 
-// 4. Kampanya tanımlayın
+// 4. Define campaign
 var campaign = new GeneralCampaign
 {
     Code = "SUMMER2024",
-    Name = "Yaz İndirimi",
+    Name = "Summer Sale",
     ModulId = 1,
     Priority = 100,
     StartDate = DateTime.Now,
     EndDate = DateTime.Now.AddMonths(3),
     
-    // Seçim kuralı - Kampanya ne zaman uygulanır?
-    Predicate = "Input.TotalAmount > 500 && Input.Country == \"TR\"",
+    // Predicate rule - When to apply campaign?
+    Predicate = "Input.TotalAmount > 500 && Input.Country == \"US\"",
     
-    // Sonuç kuralı - Ne kadar indirim yapılır?
-    Result = @"Output.TotalDiscount = new Price(100, ""TRY"");",
+    // Result rule - How much discount?
+    Result = @"Output.TotalDiscount = new Price(100, ""USD"");",
     
-    // Kullanım kuralı - Kimler kullanabilir?
+    // Usage rule - Who can use it?
     Usage = "Input.UsageCount < 10",
     
     CampaignTypes = (int)CampaignTypes.DiscountCampaign,
@@ -154,11 +154,11 @@ var campaign = new GeneralCampaign
 
 repository.AddCampaign(campaign);
 
-// 5. Kampanyaları alın ve uygulayın
+// 5. Get and apply campaigns
 var input = new CampaignInput
 {
     TotalAmount = 600,
-    Country = "TR",
+    Country = "US",
     UsageCount = 5
 };
 
@@ -171,17 +171,17 @@ foreach (var result in campaigns)
 }
 ```
 
-### SQLite Persistence Kullanımı
+### SQLite Persistence Usage
 
 ```csharp
 using RuleEngine.Sqlite.Data;
 using Microsoft.EntityFrameworkCore;
 
-// 1. DbContext'i yapılandırın
+// 1. Configure DbContext
 services.AddDbContext<RuleDbContext>(options =>
     options.UseSqlite("Data Source=ruleengine.db"));
 
-// 2. Repository'leri kullanın
+// 2. Use repositories
 public class RuleService
 {
     private readonly RuleDbContext _context;
@@ -224,130 +224,112 @@ public class RuleService
 }
 ```
 
-## 📦 Gereksinimler
+## 📦 Requirements
 
-- .NET 8.0, .NET 9.0 veya .NET 10.0
-- Microsoft.CodeAnalysis.CSharp.Scripting 4.8.0
-- Microsoft.Extensions.DependencyInjection 8.0.0
-- Microsoft.Extensions.Logging 8.0.0
+- .NET 8.0, .NET 9.0, or .NET 10.0
+- Microsoft.CodeAnalysis.CSharp.Scripting 4.14.0
+- Microsoft.Extensions.DependencyInjection 8.0.0+
+- Microsoft.Extensions.Logging 8.0.0+
+- Microsoft.Extensions.Caching.Memory 8.0.1+
 
-## 🏗️ Mimari
+## 🏗️ Architecture
 
 ```
 RuleEngine/
 ├── src/
-│   ├── RuleEngine.Core/          # Kural motoru çekirdeği
-│   │   ├── Rule/                 # Kural yönetimi
-│   │   ├── Models/               # Veri modelleri
-│   │   ├── Abstractions/         # Interface'ler
-│   │   └── Services/             # Servisler
+│   ├── RuleEngine.Core/          # Rule engine core
+│   │   ├── Rule/                 # Rule management
+│   │   ├── Models/               # Data models
+│   │   ├── Abstractions/         # Interfaces
+│   │   └── Services/             # Services
 │   │
-│   └── CampaignEngine.Core/      # Kampanya motoru
-│       ├── Models/               # Kampanya modelleri
-│       ├── Abstractions/         # Interface'ler
-│       ├── Cache/                # Önbellek sağlayıcıları
-│       ├── Repositories/         # Veri erişim
-│       └── Extensions/           # Extension metodlar
+│   ├── RuleEngine.Sqlite/        # SQLite persistence
+│   │   ├── Data/                 # DbContext & Entities
+│   │   └── Repositories/         # Repository implementations
+│   │
+│   └── CampaignEngine.Core/      # Campaign engine
+│       ├── Models/               # Campaign models
+│       ├── Abstractions/         # Interfaces
+│       ├── Cache/                # Cache providers
+│       ├── Repositories/         # Data access
+│       └── Extensions/           # Extension methods
 │
-├── tests/                        # Test projeleri
-└── examples/                     # Örnek uygulamalar
+├── tests/                        # Test projects
+├── demo/                         # Demo applications
+└── docs/                         # Documentation
 ```
 
-## 🔧 Konfigürasyon
+## 📝 Rule Writing
 
-### Dependency Injection
-
-```csharp
-services.AddCampaignEngine();
-services.AddLogging();
-services.AddMemoryCache();
-```
-
-### Custom Repository
+### Predicate (Selection) Rule
+Determines when the campaign should be applied:
 
 ```csharp
-public class MyCampaignRepository : ICampaignRepository
-{
-    public IEnumerable<GeneralCampaign> GetCampaigns(DateTime after, int moduleId)
-    {
-        // Veritabanından kampanyaları getir
-    }
-}
-
-services.AddSingleton<ICampaignRepository, MyCampaignRepository>();
-```
-
-## 📝 Kural Yazımı
-
-### Predicate (Seçim) Kuralı
-Kampanyanın ne zaman uygulanacağını belirler:
-
-```csharp
-// Basit koşul
+// Simple condition
 "Input.TotalPrice.Value > 1000"
 
-// Çoklu koşul
-"Input.TotalPrice.Value > 1000 && Input.Country == \"TR\""
+// Multiple conditions
+"Input.TotalPrice.Value > 1000 && Input.Country == \"US\""
 
-// Tarih kontrolü
+// Date check
 "Input.OrderDate >= DateTime.Now.AddDays(-7)"
 
-// Liste kontrolü
+// List check
 "Input.Categories.Contains(\"Electronics\")"
 
-// Karmaşık koşul
+// Complex condition
 "Input.CustomerType == \"VIP\" && Input.TotalOrders > 10 && Input.LastOrderDate > DateTime.Now.AddMonths(-1)"
 ```
 
-### Result (Sonuç) Kuralı
-İndirim miktarını hesaplar:
+### Result (Action) Rule
+Calculates the discount amount:
 
 ```csharp
-// Sabit tutar indirimi
-"Output.TotalDiscount = new Price(100, \"TRY\");"
+// Fixed amount discount
+"Output.TotalDiscount = new Price(100, \"USD\");"
 
-// Yüzde hesaplama
+// Percentage calculation
 "Output.TotalDiscount = Input.TotalPrice * 0.2m;"
 
-// Koşullu hesaplama
+// Conditional calculation
 @"if (Input.TotalPrice.Value > 1000)
     Output.TotalDiscount = Input.TotalPrice * 0.25m;
   else
     Output.TotalDiscount = Input.TotalPrice * 0.15m;"
 
-// Ürün hediye
-@"Output.TotalDiscount = new Price(100, ""TRY"");
+// Product gift
+@"Output.TotalDiscount = new Price(100, ""USD"");
   Output.CampaignProductDiscount = new CampaignProductDiscount 
   { 
       ProductKey = ""GIFT-001"",
-      DiscountAmount = new Price(50, ""TRY"")
+      DiscountAmount = new Price(50, ""USD"")
   };"
 ```
 
-### Usage (Kullanım) Kuralı
-Kampanyayı kimlerin kullanabileceğini belirler:
+### Usage (Eligibility) Rule
+Determines who can use the campaign:
 
 ```csharp
-// Kullanım sayısı kontrolü
+// Usage count check
 "Input.UsageCount < 5"
 
-// İlk alışveriş kontrolü
+// First purchase check
 "Input.IsFirstPurchase == true"
 
-// Üyelik seviyesi kontrolü
+// Membership level check
 "Input.MembershipLevel >= 2 && Input.UsageCount < 10"
 ```
 
-## 🎯 Kampanya Tipleri
+## 🎯 Campaign Types
 
 ### DiscountCampaign (0)
-İndirim kampanyaları - En yüksek öncelikli kampanya uygulanır
+Discount campaigns - Highest priority campaign is applied
 
 ```csharp
 var campaign = new GeneralCampaign
 {
     Code = "VIP20",
-    Name = "VIP Müşteri İndirimi",
+    Name = "VIP Customer Discount",
     Predicate = "Input.CustomerType == \"VIP\" && Input.TotalAmount > 500",
     Result = "Output.TotalDiscount = Input.TotalAmount * 0.2m;",
     CampaignTypes = (int)CampaignTypes.DiscountCampaign,
@@ -356,18 +338,18 @@ var campaign = new GeneralCampaign
 ```
 
 ### ProductGiftCampaign (1)
-Ürün hediye kampanyaları - Tüm uygun kampanyalar uygulanır
+Product gift campaigns - All eligible campaigns are applied
 
 ```csharp
 var campaign = new GeneralCampaign
 {
     Code = "GIFT3",
-    Name = "3 Al 1 Öde",
+    Name = "Buy 3 Pay 2",
     Predicate = "Input.ProductCount >= 3",
     Result = @"Output.CampaignProductDiscount = new CampaignProductDiscount 
                { 
                    ProductKey = Input.ProductKey,
-                   DiscountAmount = new Price(Input.ProductPrice.Value / 3, ""TRY"")
+                   DiscountAmount = new Price(Input.ProductPrice.Value / 3, ""USD"")
                };",
     CampaignTypes = (int)CampaignTypes.ProductGiftCampaign,
     Priority = 50
@@ -375,31 +357,31 @@ var campaign = new GeneralCampaign
 ```
 
 ### GiftCoupon (2)
-Hediye kupon kampanyaları
+Gift coupon campaigns
 
 ```csharp
 var campaign = new GeneralCampaign
 {
     Code = "COUPON50",
-    Name = "50 TL Hediye Kuponu",
+    Name = "$50 Gift Coupon",
     Predicate = "Input.TotalAmount > 1000",
-    Result = "Output.GiftCoupon = new Price(50, \"TRY\");",
+    Result = "Output.GiftCoupon = new Price(50, \"USD\");",
     CampaignTypes = (int)CampaignTypes.GiftCoupon,
     Priority = 30
 };
 ```
 
-## 🔍 Örnek Senaryo: E-Ticaret Fiyatlandırma
+## 🔍 Example Scenario: E-Commerce Pricing
 
 ```csharp
-// 1. Kampanyaları tanımlayın
+// 1. Define campaigns
 var campaigns = new[]
 {
-    // VIP müşteri indirimi
+    // VIP customer discount
     new GeneralCampaign
     {
         Code = "VIP25",
-        Name = "VIP Özel İndirim",
+        Name = "VIP Special Discount",
         Priority = 100,
         StartDate = DateTime.Now,
         EndDate = DateTime.Now.AddMonths(12),
@@ -410,11 +392,11 @@ var campaigns = new[]
         Quota = 10000
     },
     
-    // Toplu sipariş indirimi
+    // Bulk order discount
     new GeneralCampaign
     {
         Code = "BULK15",
-        Name = "Toplu Sipariş İndirimi",
+        Name = "Bulk Order Discount",
         Priority = 80,
         StartDate = DateTime.Now,
         EndDate = DateTime.Now.AddMonths(6),
@@ -424,11 +406,11 @@ var campaigns = new[]
         Quota = 5000
     },
     
-    // İlk alışveriş indirimi
+    // First purchase discount
     new GeneralCampaign
     {
         Code = "WELCOME10",
-        Name = "Hoş Geldin İndirimi",
+        Name = "Welcome Discount",
         Priority = 60,
         StartDate = DateTime.Now,
         EndDate = DateTime.Now.AddMonths(12),
@@ -439,27 +421,27 @@ var campaigns = new[]
         Quota = 1000
     },
     
-    // Ücretsiz kargo
+    // Free shipping
     new GeneralCampaign
     {
         Code = "FREESHIP",
-        Name = "Ücretsiz Kargo",
+        Name = "Free Shipping",
         Priority = 40,
         StartDate = DateTime.Now,
         EndDate = DateTime.Now.AddMonths(12),
         Predicate = "Input.TotalAmount >= 200",
-        Result = "Output.FreeShipping = true; Output.ShippingDiscount = new Price(15, \"TRY\");",
+        Result = "Output.FreeShipping = true; Output.ShippingDiscount = new Price(15, \"USD\");",
         CampaignTypes = (int)CampaignTypes.DiscountCampaign
     }
 };
 
-// 2. Repository'ye ekleyin
+// 2. Add to repository
 foreach (var campaign in campaigns)
 {
     repository.AddCampaign(campaign);
 }
 
-// 3. Kampanyaları kullanın
+// 3. Use campaigns
 var input = new CampaignInput 
 { 
     TotalAmount = 600,
@@ -471,7 +453,7 @@ var input = new CampaignInput
 
 var results = campaignManager.GetCampaign(input);
 
-// 4. Sonuçları işleyin
+// 4. Process results
 foreach (var result in results)
 {
     Console.WriteLine($"Campaign: {result.Code} - {result.Name}");
@@ -481,40 +463,40 @@ foreach (var result in results)
 }
 
 // Output:
-// Campaign: VIP25 - VIP Özel İndirim
-// Discount: 150 TRY (25% of 600)
+// Campaign: VIP25 - VIP Special Discount
+// Discount: 150 USD (25% of 600)
 // Priority: 100
 //
-// Campaign: FREESHIP - Ücretsiz Kargo
-// Discount: 15 TRY
+// Campaign: FREESHIP - Free Shipping
+// Discount: 15 USD
 // Priority: 40
 ```
 
-## 🧪 Test
+## 🧪 Testing
 
 ```bash
-# Tüm testleri çalıştırın
+# Run all tests
 dotnet test
 
-# Belirli bir test projesini çalıştırın
+# Run specific test project
 dotnet test tests/CampaignEngine.Core.Tests/
 dotnet test tests/RuleEngine.Core.Tests/
 dotnet test tests/RuleEngine.Integration.Tests/
 
-# Coverage ile çalıştırın
+# Run with coverage
 dotnet test --collect:"XPlat Code Coverage"
 
 # Verbose output
 dotnet test --logger "console;verbosity=detailed"
 ```
 
-**Test İstatistikleri:**
+**Test Statistics:**
 - ✅ CampaignEngine.Core.Tests: 26/26 passed
 - ✅ RuleEngine.Core.Tests: 5/5 passed
 - ✅ RuleEngine.Integration.Tests: 2/2 passed
-- 📊 Toplam Coverage: %95+
+- 📊 Total Coverage: 95%+
 
-### Test Örneği
+### Test Example
 
 ```csharp
 using Xunit;
@@ -550,9 +532,9 @@ public class CampaignManagerTests
 }
 ```
 
-## 📦 NuGet Paketleri
+## 📦 NuGet Packages
 
-### Kurulum
+### Installation
 
 ```bash
 # RuleEngine.Core
@@ -565,29 +547,29 @@ dotnet add package Minima.RuleEngine.Sqlite --version 1.0.3
 dotnet add package Minima.CampaignEngine.Core --version 1.0.2
 ```
 
-### Paket Oluşturma
+### Package Creation
 
 ```bash
-# Tüm paketleri oluştur
+# Build all packages
 dotnet pack --configuration Release
 
-# Belirli bir paketi oluştur
+# Build specific package
 dotnet pack src/RuleEngine.Core/RuleEngine.Core.csproj --configuration Release
 dotnet pack src/CampaignEngine.Core/CampaignEngine.Core.csproj --configuration Release
 
-# NuGet'e publish
+# Publish to NuGet
 dotnet nuget push bin/Release/Minima.RuleEngine.Core.1.0.3.nupkg --api-key YOUR_API_KEY --source https://api.nuget.org/v3/index.json
 ```
 
-### Paket Bilgileri
+### Package Information
 
-| Paket | Versiyon | .NET Desteği | İndirme |
-|-------|----------|---------------|----------|
+| Package | Version | .NET Support | Download |
+|---------|---------|--------------|----------|
 | Minima.RuleEngine.Core | 1.0.3 | 8.0, 9.0, 10.0 | [![NuGet](https://img.shields.io/nuget/v/Minima.RuleEngine.Core.svg)](https://www.nuget.org/packages/Minima.RuleEngine.Core/) |
 | Minima.RuleEngine.Sqlite | 1.0.3 | 8.0, 9.0, 10.0 | [![NuGet](https://img.shields.io/nuget/v/Minima.RuleEngine.Sqlite.svg)](https://www.nuget.org/packages/Minima.RuleEngine.Sqlite/) |
 | Minima.CampaignEngine.Core | 1.0.2 | 8.0, 9.0, 10.0 | [![NuGet](https://img.shields.io/nuget/v/Minima.CampaignEngine.Core.svg)](https://www.nuget.org/packages/Minima.CampaignEngine.Core/) |
 
-## 🔧 Gelişmiş Kullanım
+## 🔧 Advanced Usage
 
 ### Custom Repository
 
@@ -671,7 +653,7 @@ services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect("loc
 services.AddSingleton<ICacheProvider, RedisCacheProvider>();
 ```
 
-### ASP.NET Core API Entegrasyonu
+### ASP.NET Core API Integration
 
 ```csharp
 [ApiController]
@@ -724,21 +706,21 @@ public class CampaignController : ControllerBase
 }
 ```
 
-## 📊 Performans İpuçları
+## 📊 Performance Tips
 
-### 1. Kural Önbellekleme
+### 1. Rule Caching
 
 ```csharp
-// Kurallar otomatik olarak önbelleklenir
+// Rules are automatically cached
 var rule = await compiler.CompileAsync("rule1", ruleString);
-// İlk derleme: ~50-100ms
+// First compilation: ~50-100ms
 
 var result1 = rule.Invoke(input1); // ~0.1-1ms
 var result2 = rule.Invoke(input2); // ~0.1-1ms
 var result3 = rule.Invoke(input3); // ~0.1-1ms
 ```
 
-### 2. Paralel Kural Çalıştırma
+### 2. Parallel Rule Execution
 
 ```csharp
 public async Task<List<CampaignOutput>> ExecuteMultipleCampaignsAsync(
@@ -758,38 +740,40 @@ public async Task<List<CampaignOutput>> ExecuteMultipleCampaignsAsync(
 ### 3. Background Processing
 
 ```csharp
-// RuleManager otomatik olarak arka planda kuralları günceller
+// RuleManager automatically updates rules in the background
 RuleManager.StartBackgroundProcessing(TimeSpan.FromMinutes(5));
 ```
 
-## 📚 Dokümantasyon
+## 🤝 Contributing
 
-- [STRUCTURE.md](STRUCTURE.md) - Proje yapısı ve mimari
-- [MULTI-TARGETING.md](MULTI-TARGETING.md) - Multi-framework desteği
-- [ECOMMERCE_EXAMPLES.md](docs/ECOMMERCE_EXAMPLES.md) - E-ticaret örnekleri
-- [CONTRIBUTING.md](CONTRIBUTING.md) - Katkıda bulunma rehberi
-- [CHANGELOG.md](CHANGELOG.md) - Sürüm geçmişi
-- [SECURITY.md](SECURITY.md) - Güvenlik politikası
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'feat: Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## 🤝 Katkıda Bulunma
+## 📄 License
 
-1. Fork yapın
-2. Feature branch oluşturun (`git checkout -b feature/amazing-feature`)
-3. Commit yapın (`git commit -m 'feat: Add amazing feature'`)
-4. Push yapın (`git push origin feature/amazing-feature`)
-5. Pull Request oluşturun
+MIT License - see [LICENSE](LICENSE) file for details.
 
-## 📄 Lisans
-
-MIT License - detaylar için [LICENSE](LICENSE) dosyasına bakın.
-
-## 👥 Yazarlar
+## 👥 Authors
 
 - RuleEngine Team
 - CampaignEngine Team
 
-## 🔗 Bağlantılar
+## 🔗 Links
 
-- [Dokümantasyon](docs/)
-- [Örnekler](examples/)
+- [Documentation](docs/)
+- [Examples](examples/)
 - [Changelog](CHANGELOG.md)
+- [Contributing Guide](CONTRIBUTING.md)
+- [Security Policy](SECURITY.md)
+
+## 📚 Documentation
+
+- [STRUCTURE.md](STRUCTURE.md) - Project structure and architecture
+- [MULTI-TARGETING.md](MULTI-TARGETING.md) - Multi-framework support
+- [ECOMMERCE_EXAMPLES.md](docs/ECOMMERCE_EXAMPLES.md) - E-commerce examples
+- [CONTRIBUTING.md](CONTRIBUTING.md) - Contributing guide
+- [CHANGELOG.md](CHANGELOG.md) - Version history
+- [SECURITY.md](SECURITY.md) - Security policy
