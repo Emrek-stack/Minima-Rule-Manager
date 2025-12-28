@@ -395,3 +395,8 @@ FodyWeavers.xsd
 ruleengine.db
 *.db-shm
 *.db-wal
+
+# Release scripts (sensitive)
+release.ps1
+release.sh
+RELEASE.md
