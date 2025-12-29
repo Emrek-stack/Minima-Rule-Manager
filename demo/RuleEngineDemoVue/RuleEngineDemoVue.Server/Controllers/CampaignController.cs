@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
+using CampaignEngine.Core.Abstractions;
 using CampaignEngine.Core.Models;
 using CampaignEngine.Core.Repositories;
-using System.Collections.Concurrent;
+using RuleEngineDemoVue.Server.Models;
 
 namespace RuleEngineDemoVue.Server.Controllers;
 
@@ -10,53 +11,34 @@ namespace RuleEngineDemoVue.Server.Controllers;
 public class CampaignController : ControllerBase
 {
     private readonly InMemoryCampaignRepository _repository;
-    private static readonly ConcurrentDictionary<int, GeneralCampaign> _campaigns = new();
-    private static int _nextId = 1;
-    private static bool _initialized = false;
+    private readonly CampaignEngine.Core.CampaignManager<CampaignRuleInput, CampaignOutput> _campaignManager;
 
-    public CampaignController(InMemoryCampaignRepository repository)
+    public CampaignController(
+        InMemoryCampaignRepository repository,
+        CampaignEngine.Core.CampaignManager<CampaignRuleInput, CampaignOutput> campaignManager)
     {
         _repository = repository;
-        
-        if (!_initialized)
-        {
-            _initialized = true;
-            
-            _campaigns[_nextId++] = new GeneralCampaign { Id = 1, Code = "NEWYEAR2025", Name = "Yeni Yıl Kampanyası", Description = "Tüm ürünlerde %20 indirim", StartDate = DateTime.UtcNow.AddDays(-7), EndDate = DateTime.UtcNow.AddDays(30), Priority = 1, Predicate = "Model.TotalAmount > 100", Result = "Model.TotalAmount * 0.8", CreateDate = DateTime.UtcNow };
-            _campaigns[_nextId++] = new GeneralCampaign { Id = 2, Code = "VIP30", Name = "VIP Müşteri İndirimi", Description = "VIP müşterilere özel %30 indirim", StartDate = DateTime.UtcNow.AddDays(-14), EndDate = DateTime.UtcNow.AddDays(60), Priority = 2, Predicate = "Model.CustomerType == \"VIP\"", Result = "Model.TotalAmount * 0.7", CreateDate = DateTime.UtcNow };
-            _campaigns[_nextId++] = new GeneralCampaign { Id = 3, Code = "FREESHIP100", Name = "Kargo Bedava", Description = "100 TL ve üzeri kargo ücretsiz", StartDate = DateTime.UtcNow.AddDays(-30), EndDate = DateTime.UtcNow.AddDays(90), Priority = 3, Predicate = "Model.TotalAmount >= 100", Result = "0", CreateDate = DateTime.UtcNow };
-            _campaigns[_nextId++] = new GeneralCampaign { Id = 4, Code = "FIRSTORDER", Name = "İlk Sipariş İndirimi", Description = "Yeni müşterilere %15 indirim", StartDate = DateTime.UtcNow.AddDays(-60), EndDate = DateTime.UtcNow.AddDays(120), Priority = 4, Predicate = "Model.OrderCount == 0", Result = "Model.TotalAmount * 0.85", CreateDate = DateTime.UtcNow };
-            _campaigns[_nextId++] = new GeneralCampaign { Id = 5, Code = "BULK10", Name = "Toplu Alım İndirimi", Description = "3+ ürün alınca %10 indirim", StartDate = DateTime.UtcNow.AddDays(-20), EndDate = DateTime.UtcNow.AddDays(40), Priority = 5, Predicate = "Model.ProductCount > 3", Result = "Model.TotalAmount * 0.9", CreateDate = DateTime.UtcNow };
-            _campaigns[_nextId++] = new GeneralCampaign { Id = 6, Code = "WEEKEND15", Name = "Hafta Sonu İndirimi", Description = "Cumartesi-Pazar %15 indirim", StartDate = DateTime.UtcNow.AddDays(-10), EndDate = DateTime.UtcNow.AddDays(50), Priority = 6, Predicate = "Model.OrderTime.DayOfWeek == DayOfWeek.Saturday || Model.OrderTime.DayOfWeek == DayOfWeek.Sunday", Result = "Model.TotalAmount * 0.85", CreateDate = DateTime.UtcNow };
-            _campaigns[_nextId++] = new GeneralCampaign { Id = 7, Code = "ISTANBUL", Name = "İstanbul Özel", Description = "İstanbul'a teslimat %5 indirim", StartDate = DateTime.UtcNow.AddDays(-15), EndDate = DateTime.UtcNow.AddDays(45), Priority = 7, Predicate = "Model.City == \"Istanbul\"", Result = "Model.TotalAmount * 0.95", CreateDate = DateTime.UtcNow };
-            _campaigns[_nextId++] = new GeneralCampaign { Id = 8, Code = "ELECTRONICS", Name = "Elektronik İndirimi", Description = "Elektronik kategorisinde %25 indirim", StartDate = DateTime.UtcNow.AddDays(-5), EndDate = DateTime.UtcNow.AddDays(35), Priority = 8, Predicate = "Model.Category == \"Electronics\"", Result = "Model.TotalAmount * 0.75", CreateDate = DateTime.UtcNow };
-            _campaigns[_nextId++] = new GeneralCampaign { Id = 9, Code = "PREMIUM500", Name = "Premium Sipariş", Description = "500 TL üzeri %12 indirim", StartDate = DateTime.UtcNow.AddDays(-25), EndDate = DateTime.UtcNow.AddDays(55), Priority = 9, Predicate = "Model.TotalAmount >= 500", Result = "Model.TotalAmount * 0.88", CreateDate = DateTime.UtcNow };
-            _campaigns[_nextId++] = new GeneralCampaign { Id = 10, Code = "LOYALTY", Name = "Sadakat İndirimi", Description = "10+ sipariş verenlere %20 indirim", StartDate = DateTime.UtcNow.AddDays(-40), EndDate = DateTime.UtcNow.AddDays(80), Priority = 10, Predicate = "Model.OrderCount >= 10", Result = "Model.TotalAmount * 0.8", CreateDate = DateTime.UtcNow };
-        }
+        _campaignManager = campaignManager;
     }
 
     [HttpGet]
-    public ActionResult<IEnumerable<GeneralCampaign>> GetAll([FromQuery] DateTime? after, [FromQuery] int moduleId = 0)
+    public ActionResult<IEnumerable<GeneralCampaign>> GetAll([FromQuery] DateTime? after, [FromQuery] int moduleId = 1)
     {
         var repoCampaigns = _repository.GetCampaigns(after ?? DateTime.MinValue, moduleId);
-        var allCampaigns = repoCampaigns.Concat(_campaigns.Values);
-        return Ok(allCampaigns);
+        return Ok(repoCampaigns);
     }
 
     [HttpGet("{id}")]
     public ActionResult<GeneralCampaign> Get(int id)
     {
-        if (_campaigns.TryGetValue(id, out var campaign))
-            return campaign;
-        return NotFound();
+        var campaign = _repository.GetById(id);
+        return campaign == null ? NotFound() : Ok(campaign);
     }
 
     [HttpPost]
     public ActionResult<GeneralCampaign> Create(GeneralCampaign campaign)
     {
-        campaign.Id = _nextId++;
-        campaign.CreateDate = DateTime.UtcNow;
-        _campaigns[campaign.Id] = campaign;
+        _repository.AddCampaign(campaign);
         return CreatedAtAction(nameof(Get), new { id = campaign.Id }, campaign);
     }
 
@@ -64,15 +46,14 @@ public class CampaignController : ControllerBase
     public IActionResult Update(int id, GeneralCampaign campaign)
     {
         if (id != campaign.Id) return BadRequest();
-        if (!_campaigns.ContainsKey(id)) return NotFound();
-        _campaigns[id] = campaign;
+        if (!_repository.UpdateCampaign(campaign)) return NotFound();
         return NoContent();
     }
 
     [HttpDelete("{id}")]
     public IActionResult Delete(int id)
     {
-        if (!_campaigns.TryRemove(id, out _)) return NotFound();
+        if (!_repository.DeleteCampaign(id)) return NotFound();
         return NoContent();
     }
 
@@ -87,4 +68,50 @@ public class CampaignController : ControllerBase
     {
         return Ok(_repository.CheckCampaignQuota(quota, campaignId));
     }
+
+    [HttpPost("evaluate")]
+    public ActionResult<IEnumerable<CampaignOutput>> Evaluate([FromBody] CampaignEvaluationRequest request)
+    {
+        var results = _campaignManager.GetCampaign(request.Input);
+        return Ok(results);
+    }
+
+    [HttpPost("available")]
+    public ActionResult<IEnumerable<AvailableCampaign>> Available([FromBody] CampaignAvailabilityRequest request)
+    {
+        var campaigns = _repository.GetCampaigns(DateTime.MinValue, request.ModuleId).ToList();
+        foreach (var product in request.Products)
+        {
+            if (product.CampaignInformations.Count > 0)
+                continue;
+
+            foreach (var campaign in campaigns)
+            {
+                product.CampaignInformations[campaign.Code] = new CampaignInformation
+                {
+                    Code = campaign.Code,
+                    Name = campaign.Name,
+                    CampaignTypes = (CampaignTypes)(campaign.CampaignTypes ?? (int)CampaignTypes.DiscountCampaign),
+                    TotalDiscount = new Price(0m, "TRY")
+                };
+            }
+        }
+
+        var products = request.Products.ToDictionary(p => p.Key, p => (ITravelProduct)p);
+        var results = _campaignManager.GetAvailableCampaigns(request.ProductKey, products, request.Input);
+        return Ok(results);
+    }
+}
+
+public sealed class CampaignEvaluationRequest
+{
+    public CampaignRuleInput Input { get; set; } = new();
+}
+
+public sealed class CampaignAvailabilityRequest
+{
+    public string ProductKey { get; set; } = string.Empty;
+    public CampaignRuleInput Input { get; set; } = new();
+    public List<DemoTravelProduct> Products { get; set; } = new();
+    public int ModuleId { get; set; } = 1;
 }

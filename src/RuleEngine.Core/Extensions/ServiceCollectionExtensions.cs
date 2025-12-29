@@ -27,7 +27,7 @@ public static class ServiceCollectionExtensions
     /// <returns>Service collection for chaining</returns>
     public static IServiceCollection AddRuleEngineDesignTime(this IServiceCollection services)
     {
-        services.TryAddSingleton<MetadataManagerInitializer>();
+        services.TryAddScoped<MetadataManagerInitializer>();
         return services;
     }
 }

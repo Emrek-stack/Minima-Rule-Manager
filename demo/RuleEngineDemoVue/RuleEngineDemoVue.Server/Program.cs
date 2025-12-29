@@ -1,19 +1,35 @@
 using Microsoft.EntityFrameworkCore;
-using RuleEngine.Sqlite.Data;
 using CampaignEngine.Core.Extensions;
+using CampaignEngine.Core.Models;
 using CampaignEngine.Core.Repositories;
+using CampaignEngine.Core.Abstractions;
+using RuleEngine.Core.Abstractions;
+using RuleEngine.Core.Extensions;
+using RuleEngine.Core.Managers;
 using RuleEngine.Core.Models;
+using RuleEngine.Sqlite.Data;
+using RuleEngine.Sqlite.Extensions;
+using RuleEngineDemoVue.Server.Models;
+using RuleEngineDemoVue.Server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
-builder.Services.AddDbContext<RuleDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("RuleEngine") ?? "Data Source=ruleengine.db"));
+builder.Services.AddRuleEngineWithSqlite(builder.Configuration.GetConnectionString("RuleEngine") ?? "Data Source=ruleengine.db");
+builder.Services.AddRuleEngineDesignTime();
+builder.Services.AddSingleton<IRuleEvaluator, DemoRuleEvaluator>();
+builder.Services.AddScoped<IRuleEngine, DemoRuleEngine>();
+builder.Services.AddScoped<IRuleManager, RuleManager>();
 
 builder.Services.AddCampaignEngine();
-builder.Services.AddSingleton<InMemoryCampaignRepository>();
+builder.Services.AddSingleton(sp =>
+    new CampaignEngine.Core.CampaignManager<CampaignRuleInput, CampaignOutput>(
+        moduleId: 1,
+        serviceProvider: sp,
+        logger: sp.GetRequiredService<ILogger<CampaignEngine.Core.CampaignManager<CampaignRuleInput, CampaignOutput>>>(),
+        typeof(Price)));
 
 var app = builder.Build();
 
@@ -22,48 +38,46 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<RuleDbContext>();
     await db.Database.EnsureDeletedAsync();
     await db.Database.EnsureCreatedAsync();
-    
-    var rules = new[]
+
+    var ruleRepository = scope.ServiceProvider.GetRequiredService<IRuleRepository>();
+
+    var ruleSeed = new[]
     {
-        new RuleEntity { Id = "RULE001", Name = "Minimum Sipariş Tutarı", Description = "Sipariş tutarı 100 TL üzerinde olmalı", Status = RuleStatus.Active, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow, Tags = new[] { "order", "validation" } },
-        new RuleEntity { Id = "RULE002", Name = "VIP Müşteri Kontrolü", Description = "Müşteri VIP statüsünde mi?", Status = RuleStatus.Active, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow, Tags = new[] { "customer", "vip" } },
-        new RuleEntity { Id = "RULE003", Name = "Stok Kontrolü", Description = "Ürün stoğu yeterli mi?", Status = RuleStatus.Active, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow, Tags = new[] { "product", "stock" } },
-        new RuleEntity { Id = "RULE004", Name = "Çalışma Saatleri", Description = "Sipariş çalışma saatleri içinde mi?", Status = RuleStatus.Active, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow, Tags = new[] { "time", "business" } },
-        new RuleEntity { Id = "RULE005", Name = "Maksimum Sipariş Limiti", Description = "Sipariş tutarı 10000 TL'yi aşmamalı", Status = RuleStatus.Active, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow, Tags = new[] { "order", "limit" } },
-        new RuleEntity { Id = "RULE006", Name = "Yeni Müşteri", Description = "İlk siparişi mi?", Status = RuleStatus.Active, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow, Tags = new[] { "customer", "new" } },
-        new RuleEntity { Id = "RULE007", Name = "Toplu Alım", Description = "3'ten fazla ürün var mı?", Status = RuleStatus.Active, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow, Tags = new[] { "product", "bulk" } },
-        new RuleEntity { Id = "RULE008", Name = "Şehir Kontrolü", Description = "İstanbul'a teslimat mı?", Status = RuleStatus.Active, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow, Tags = new[] { "location", "city" } },
-        new RuleEntity { Id = "RULE009", Name = "Hafta Sonu İndirimi", Description = "Cumartesi veya Pazar mı?", Status = RuleStatus.Active, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow, Tags = new[] { "time", "weekend" } },
-        new RuleEntity { Id = "RULE010", Name = "Kategori Kontrolü", Description = "Elektronik kategorisinde mi?", Status = RuleStatus.Active, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow, Tags = new[] { "product", "category" } }
+        new { Name = "Minimum Sipariş Tutarı", Description = "Sipariş tutarı 100 TL üzerinde olmalı", Predicate = "Input.TotalAmount > 100m" },
+        new { Name = "VIP Müşteri Kontrolü", Description = "Müşteri VIP statüsünde mi?", Predicate = "Input.CustomerType == \"VIP\"" },
+        new { Name = "Stok Kontrolü", Description = "Ürün stoğu yeterli mi?", Predicate = "Input.StockQuantity > 0" },
+        new { Name = "Çalışma Saatleri", Description = "Sipariş çalışma saatleri içinde mi?", Predicate = "Input.OrderTime.Hour >= 9 && Input.OrderTime.Hour <= 18" },
+        new { Name = "Maksimum Sipariş Limiti", Description = "Sipariş tutarı 10000 TL'yi aşmamalı", Predicate = "Input.TotalAmount <= 10000m" },
+        new { Name = "Yeni Müşteri", Description = "İlk siparişi mi?", Predicate = "Input.OrderCount == 0" },
+        new { Name = "Toplu Alım", Description = "3'ten fazla ürün var mı?", Predicate = "Input.ProductCount > 3" },
+        new { Name = "Şehir Kontrolü", Description = "İstanbul'a teslimat mı?", Predicate = "Input.City == \"Istanbul\"" },
+        new { Name = "Hafta Sonu İndirimi", Description = "Cumartesi veya Pazar mı?", Predicate = "Input.OrderTime.DayOfWeek == DayOfWeek.Saturday || Input.OrderTime.DayOfWeek == DayOfWeek.Sunday" },
+        new { Name = "Kategori Kontrolü", Description = "Elektronik kategorisinde mi?", Predicate = "Input.Category == \"Electronics\"" }
     };
-    await db.Rules.AddRangeAsync(rules);
-    
-    var versions = new[]
+
+    foreach (var rule in ruleSeed)
     {
-        new RuleVersionEntity { Id = "VER001", RuleId = "RULE001", Version = 1, PredicateExpression = "Model.TotalAmount > 100", ResultExpression = "true", Language = "csharp", IsActive = true, CreatedAt = DateTime.UtcNow },
-        new RuleVersionEntity { Id = "VER002", RuleId = "RULE002", Version = 1, PredicateExpression = "Model.CustomerType == \"VIP\"", ResultExpression = "true", Language = "csharp", IsActive = true, CreatedAt = DateTime.UtcNow },
-        new RuleVersionEntity { Id = "VER003", RuleId = "RULE003", Version = 1, PredicateExpression = "Model.StockQuantity > 0", ResultExpression = "true", Language = "csharp", IsActive = true, CreatedAt = DateTime.UtcNow },
-        new RuleVersionEntity { Id = "VER004", RuleId = "RULE004", Version = 1, PredicateExpression = "Model.OrderTime.Hour >= 9 && Model.OrderTime.Hour <= 18", ResultExpression = "true", Language = "csharp", IsActive = true, CreatedAt = DateTime.UtcNow },
-        new RuleVersionEntity { Id = "VER005", RuleId = "RULE005", Version = 1, PredicateExpression = "Model.TotalAmount <= 10000", ResultExpression = "true", Language = "csharp", IsActive = true, CreatedAt = DateTime.UtcNow },
-        new RuleVersionEntity { Id = "VER006", RuleId = "RULE006", Version = 1, PredicateExpression = "Model.OrderCount == 0", ResultExpression = "true", Language = "csharp", IsActive = true, CreatedAt = DateTime.UtcNow },
-        new RuleVersionEntity { Id = "VER007", RuleId = "RULE007", Version = 1, PredicateExpression = "Model.ProductCount > 3", ResultExpression = "true", Language = "csharp", IsActive = true, CreatedAt = DateTime.UtcNow },
-        new RuleVersionEntity { Id = "VER008", RuleId = "RULE008", Version = 1, PredicateExpression = "Model.City == \"Istanbul\"", ResultExpression = "true", Language = "csharp", IsActive = true, CreatedAt = DateTime.UtcNow },
-        new RuleVersionEntity { Id = "VER009", RuleId = "RULE009", Version = 1, PredicateExpression = "Model.OrderTime.DayOfWeek == DayOfWeek.Saturday || Model.OrderTime.DayOfWeek == DayOfWeek.Sunday", ResultExpression = "true", Language = "csharp", IsActive = true, CreatedAt = DateTime.UtcNow },
-        new RuleVersionEntity { Id = "VER010", RuleId = "RULE010", Version = 1, PredicateExpression = "Model.Category == \"Electronics\"", ResultExpression = "true", Language = "csharp", IsActive = true, CreatedAt = DateTime.UtcNow }
-    };
-    await db.RuleVersions.AddRangeAsync(versions);
-    
-    var parameters = new[]
+        var created = await ruleRepository.CreateAsync(new CreateRuleRequest
+        {
+            Name = rule.Name,
+            Description = rule.Description,
+            Tags = new[] { "demo" },
+            Content = new RuleContent
+            {
+                PredicateExpression = rule.Predicate,
+                ResultExpression = "true"
+            }
+        });
+        await ruleRepository.ActivateVersionAsync(created.Id, 1);
+    }
+
+    var campaignRepository = scope.ServiceProvider.GetRequiredService<ICampaignRepository>();
+    if (campaignRepository is InMemoryCampaignRepository memoryRepo)
     {
-        new RuleParameterEntity { Id = "PARAM001", RuleId = "RULE001", Name = "MinAmount", Type = "decimal", Value = "100" },
-        new RuleParameterEntity { Id = "PARAM002", RuleId = "RULE005", Name = "MaxAmount", Type = "decimal", Value = "10000" },
-        new RuleParameterEntity { Id = "PARAM003", RuleId = "RULE004", Name = "StartHour", Type = "int", Value = "9" },
-        new RuleParameterEntity { Id = "PARAM004", RuleId = "RULE004", Name = "EndHour", Type = "int", Value = "18" },
-        new RuleParameterEntity { Id = "PARAM005", RuleId = "RULE007", Name = "MinProductCount", Type = "int", Value = "3" }
-    };
-    await db.RuleParameters.AddRangeAsync(parameters);
-    
-    await db.SaveChangesAsync();
+        memoryRepo.AddCampaign(new GeneralCampaign { Id = 1, Code = "NEWYEAR2025", Name = "Yeni Yıl Kampanyası", Description = "Tüm ürünlerde %20 indirim", StartDate = DateTime.UtcNow.AddDays(-7), EndDate = DateTime.UtcNow.AddDays(30), Priority = 1, Predicate = "Input.TotalAmount > 100m", Result = "Output.TotalDiscount = new Price(Input.TotalAmount * 0.2m, \"TRY\");", Usage = "Input.UsageCount < 5", CampaignTypes = (int)CampaignTypes.DiscountCampaign, CreateDate = DateTime.UtcNow, ModulId = 1 });
+        memoryRepo.AddCampaign(new GeneralCampaign { Id = 2, Code = "VIP30", Name = "VIP Müşteri İndirimi", Description = "VIP müşterilere özel %30 indirim", StartDate = DateTime.UtcNow.AddDays(-14), EndDate = DateTime.UtcNow.AddDays(60), Priority = 2, Predicate = "Input.CustomerType == \"VIP\"", Result = "Output.TotalDiscount = new Price(Input.TotalAmount * 0.3m, \"TRY\");", Usage = "true", CampaignTypes = (int)CampaignTypes.DiscountCampaign, CreateDate = DateTime.UtcNow, ModulId = 1 });
+        memoryRepo.AddCampaign(new GeneralCampaign { Id = 3, Code = "FREESHIP100", Name = "Kargo Bedava", Description = "100 TL ve üzeri kargo ücretsiz", StartDate = DateTime.UtcNow.AddDays(-30), EndDate = DateTime.UtcNow.AddDays(90), Priority = 3, Predicate = "Input.TotalAmount >= 100m", Result = "Output.TotalDiscount = new Price(25m, \"TRY\");", Usage = "true", CampaignTypes = (int)CampaignTypes.ProductGiftCampaign, CreateDate = DateTime.UtcNow, ModulId = 1 });
+    }
 }
 
 app.UseDefaultFiles();

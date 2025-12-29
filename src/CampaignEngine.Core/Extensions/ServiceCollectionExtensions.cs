@@ -11,7 +11,8 @@ public static class ServiceCollectionExtensions
     {
         services.AddMemoryCache();
         services.AddSingleton<ICacheProvider, MemoryCacheProvider>();
-        services.AddSingleton<ICampaignRepository, InMemoryCampaignRepository>();
+        services.AddSingleton<InMemoryCampaignRepository>();
+        services.AddSingleton<ICampaignRepository>(sp => sp.GetRequiredService<InMemoryCampaignRepository>());
         return services;
     }
 }
