@@ -7,7 +7,7 @@
     <LangVersion>latest</LangVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Minima.CampaignEngine.Core</PackageId>
-    <Version>1.1.8</Version>
+    <Version>1.1.9</Version>
     <Authors>CampaignEngine Team</Authors>
     <Description>Core campaign engine with rule-based system for .NET 8/9/10</Description>
     <PackageTags>campaign;rules;engine;ecommerce</PackageTags>
