@@ -100,6 +100,17 @@ foreach (var campaign in campaigns)
 }
 ```
 
+### 6. Kampanya Setlerini ve Uygun Kampanyalari Alma
+
+```csharp
+var campaignResults = campaignManager.GetCampaign(input, out var ruleSets);
+
+var available = campaignManager.GetAvailableCampaigns(
+    productKey: "PRD-001",
+    productsInTransaction: products,
+    input: input);
+```
+
 ## 📋 Kampanya Tipleri
 
 ### DiscountCampaign (0)
