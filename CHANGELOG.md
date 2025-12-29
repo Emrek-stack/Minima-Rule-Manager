@@ -44,7 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Bootstrap-based responsive design
 
 - **Rule Builder UI**
-  - KnockoutJS-based rule builder (ported from Gordios)
+  - KnockoutJS-based rule builder
   - Drag-and-drop rule construction
   - Dynamic parameter management
   - Real-time validation
@@ -108,11 +108,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Migration Guide
 
-### From Gordios RuleEngine
+### Migration Notes
 
-RuleEngine is a complete port of the Gordios RuleEngine with modern .NET 8 features:
+RuleEngine is a complete port of a legacy rule engine with modern .NET 8 features:
 
-1. **Static RuleManager**: The core `RuleManager` remains static as in Gordios
+1. **Static RuleManager**: The core `RuleManager` remains static for compatibility
 2. **RuleCompiler**: Enhanced with better error handling and async support
 3. **RuleSet**: Improved with better type safety and performance
 4. **Persistence**: Added SQLite support with EF Core
@@ -139,7 +139,6 @@ RuleEngine is a complete port of the Gordios RuleEngine with modern .NET 8 featu
 ---
 
 **Made with ❤️ for the .NET community**
-
 
 
 

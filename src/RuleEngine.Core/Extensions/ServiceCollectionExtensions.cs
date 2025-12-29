@@ -16,7 +16,7 @@ public static class ServiceCollectionExtensions
     /// <returns>Service collection for chaining</returns>
     public static IServiceCollection AddRuleEngine(this IServiceCollection services)
     {
-        // Gordios RuleEngine uses static RuleManager, no DI registration needed
+        // Uses static RuleManager, no DI registration needed
         return services;
     }
 

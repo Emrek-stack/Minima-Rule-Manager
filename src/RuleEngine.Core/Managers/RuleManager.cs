@@ -8,7 +8,7 @@ using RuleEngine.Core.Models;
 namespace RuleEngine.Core.Managers
 {
     /// <summary>
-    /// Rule execution manager based on Gordios.RuleEngine flow.
+    /// Rule execution manager based on the provider flow.
     /// </summary>
     public class RuleManager : IRuleManager
     {

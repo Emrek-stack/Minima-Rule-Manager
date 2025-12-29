@@ -9,7 +9,7 @@ Core rule engine library for .NET with Roslyn-based compilation, design-time met
 - **Design-Time Metadata**: Rule editor metadata, categories, and parameter definitions
 - **Versioning**: Create multiple versions of rules and activate specific versions
 - **Audit Logging**: Track rule executions with input/output and performance metrics
-- **RuleManager Flow**: Gordios-style `IRuleManager` + `IRuleProvider` orchestration
+- **RuleManager Flow**: `IRuleManager` + `IRuleProvider` orchestration
 - **DEBUG_RULES**: Optional PDB generation for debugging compiled rules
 - **Extensible**: Plugin architecture for custom rule evaluators
 
@@ -267,7 +267,7 @@ Design-time metadata is collected by `MetadataManager` (wired via `AddRuleEngine
 
 ## RuleManager Flow
 
-Use the Gordios-style manager/provider flow if you need dynamic rule selection per input:
+Use the manager/provider flow if you need dynamic rule selection per input:
 
 ```csharp
 public sealed class MyRuleProvider : IRuleProvider
