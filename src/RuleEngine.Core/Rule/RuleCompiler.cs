@@ -1,320 +1,396 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
-using System.Diagnostics;
-using System.Text;
-using Microsoft.CodeAnalysis.Text;
-using Microsoft.CodeAnalysis.Emit;
 using System.Linq.Expressions;
 using RuleEngine.Core.Models;
 
-namespace RuleEngine.Core.Rule
+namespace RuleEngine.Core.Rule;
+
+/// <summary>
+/// Kural derleyicisi.
+/// </summary>
+/// <remarks>
+/// <para>Bir kez oluşturup static olarak saklayın, aynı giriş çıkışlar için tekrar tekrar kullanın, thread-safe.</para>
+/// <para>Kuralları debug edebilmek için pdblerin oluşturulması gerekmektedir, bu da derleme işlemini aşırı şekilde yavaşlatmaktadır. Bu yüzden belli bir kuralı debug yapabilmek için RuleCompiler'ın bulunduğu projenin ayarlarında Conditional Symbols altında DEBUG_RULES direktifini tanımlayıp debug işlemini aktifleştiriniz. </para>
+/// </remarks>
+/// <typeparam name="TInput">Giriş modeli</typeparam>
+/// <typeparam name="TReturn">Çıkış modeli</typeparam>
+public class RuleCompiler<TInput, TReturn>
 {
+    private readonly bool _useExpressionTreeTemplate;
+    private readonly List<string> _namespaces;
+    private readonly List<Assembly> _references;
+    private readonly string _ruleHeader;
+    private static readonly Type InputType = typeof(TInput);
+    private static readonly Type ReturnType = typeof(TReturn);
+
+    private static readonly IEnumerable<Type> InputPropertyTypes = typeof(TInput)
+        .GetProperties()
+        .Where(p => p.CanRead && p.CanWrite)
+        .Select(p => p.PropertyType);
+
     /// <summary>
-    /// Kural derleyicisi.
+    /// Bir kural derleyicisi oluşturulur.
     /// </summary>
-    /// <remarks>
-    /// <para>Bir kez oluşturup static olarak saklayın, aynı giriş çıkışlar için tekrar tekrar kullanın, thread-safe.</para>
-    /// <para>Kuralları debug edebilmek için pdblerin oluşturulması gerekmektedir, bu da derleme işlemini aşırı şekilde yavaşlatmaktadır. Bu yüzden belli bir kuralı debug yapabilmek için RuleCompiler'ın bulunduğu projenin ayarlarında Conditional Symbols altında DEBUG_RULES direktifini tanımlayıp debug işlemini aktifleştiriniz. </para>
-    /// </remarks>
-    /// <typeparam name="TInput">Giriş modeli</typeparam>
-    /// <typeparam name="TReturn">Çıkış modeli</typeparam>
-    public class RuleCompiler<TInput, TReturn>
+    /// <param name="extraTypes">Kural içinde kullanılan ekstra tipler.</param>
+    public RuleCompiler(params Type[] extraTypes)
+        : this(extraTypes.AsEnumerable())
     {
-        private readonly bool _useExpressionTreeTemplate;
-        private readonly List<string> _namespaces;
-        private readonly List<Assembly> _references;
-        private readonly string _ruleHeader;
-        private static readonly Type InputType = typeof(TInput);
-        private static readonly Type ReturnType = typeof(TReturn);
 
-        private static readonly IEnumerable<Type> InputPropertyTypes = typeof(TInput)
-            .GetProperties()
-            .Where(p => p.CanRead && p.CanWrite)
-            .Select(p => p.PropertyType);
+    }
 
-        /// <summary>
-        /// Bir kural derleyicisi oluşturulur.
-        /// </summary>
-        /// <param name="extraTypes">Kural içinde kullanılan ekstra tipler.</param>
-        public RuleCompiler(params Type[] extraTypes)
-            : this(extraTypes.AsEnumerable())
+    /// <summary>
+    /// Bir kural derleyicisi oluşturulur.
+    /// </summary>
+    /// <param name="extraTypes">Kural içinde kullanılan ekstra tipler.</param>
+    /// <param name="useExpressionTreeTemplate">ExpressionTree tek satırlık scriptler için kullanılır. Eğer birden fazla kod satırı çalıştırılacaksa bu parametreyi false setleyin. ExpressionTree Örnek: Input => (Input.A==1 && Input.B!=5),  StatementBody Örnek: Output => {return Output.A+5;}.</param>
+    public RuleCompiler(IEnumerable<Type>? extraTypes = null, bool useExpressionTreeTemplate = true)
+    {
+        _useExpressionTreeTemplate = useExpressionTreeTemplate;
+        var extraTypeList = extraTypes?.ToList() ?? new List<Type>();
+        extraTypeList.Add(InputType); //giriş modelini de eklemek gerek.
+        extraTypeList.Add(ReturnType); //çıkış modelini de eklemek gerek.
+        extraTypeList.AddRange(InputPropertyTypes);
+        extraTypeList.AddRange(extraTypeList.SelectMany(t => GetAllBaseTypes(t)).ToList());
+        _namespaces = RuleCompilerGlobals.Namespaces
+            .Concat(extraTypeList.Select(t => t.Namespace).OfType<string>())
+            .Distinct().ToList();
+        _references = RuleCompilerGlobals.References
+            .Concat(extraTypeList.Select(t => t.Assembly))
+            .Distinct().ToList();
+
+        //bilgi amaçlı olarak namespace'leri ekliyoruz. yoksa namespace'ler script textinin içinde olmamalı.
+        _ruleHeader = "///using " + string.Join(";\r\n///using ", _namespaces) + ";";
+    }
+
+    private static IEnumerable<Type> GetAllBaseTypes(Type type)
+    {
+        var baseType = type.BaseType;
+        while (baseType != null)
         {
-
+            yield return baseType;
+            baseType = baseType.BaseType;
         }
+    }
 
-        /// <summary>
-        /// Bir kural derleyicisi oluşturulur.
-        /// </summary>
-        /// <param name="extraTypes">Kural içinde kullanılan ekstra tipler.</param>
-        /// <param name="useExpressionTreeTemplate">ExpressionTree tek satırlık scriptler için kullanılır. Eğer birden fazla kod satırı çalıştırılacaksa bu parametreyi false setleyin. ExpressionTree Örnek: Input => (Input.A==1 && Input.B!=5),  StatementBody Örnek: Output => {return Output.A+5;}.</param>
-        public RuleCompiler(IEnumerable<Type>? extraTypes = null, bool useExpressionTreeTemplate = true)
+    // ReSharper disable StaticMemberInGenericType
+    private static readonly string StatementBodyTemplate =
+        "Input => {{\r\n" +
+        "{0}\r\n" +
+        "}}";
+
+    private static readonly string ExpressionTreeTemplate =
+        "Input => {0}";
+
+    private static readonly string TupleTemplate =
+        $"new Tuple< Func<{GetFriendlyName(InputType)}, {GetFriendlyName(ReturnType)}>,Expression<Func<{GetFriendlyName(InputType)}, {GetFriendlyName(ReturnType)}>> >(\r\n" +
+        "{0},\r\n" +
+        "{1}\r\n" +
+        ")";
+
+    private static readonly string RuleTemplate =
+        $"///Generated by RuleCompiler v{RuleCompilerGlobals.Version:F}\r\n\r\n" +
+        "{0}{1}\r\n" + //header
+        "//Implementations:\r\n" +
+        $"return new Tuple< Func<{GetFriendlyName(InputType)}, {GetFriendlyName(ReturnType)}>,Expression<Func<{GetFriendlyName(InputType)}, {GetFriendlyName(ReturnType)}>> >[]" +
+        "{{\r\n" +
+        "{2}" + //Func ve expressionlar.
+        "\r\n}};";
+
+    // ReSharper restore StaticMemberInGenericType
+
+    private static string GetFriendlyName(Type type)
+    {
+        if (type.IsGenericType)
         {
-            _useExpressionTreeTemplate = useExpressionTreeTemplate;
-            var extraTypeList = extraTypes?.ToList() ?? new List<Type>();
-            extraTypeList.Add(InputType); //giriş modelini de eklemek gerek.
-            extraTypeList.Add(ReturnType); //çıkış modelini de eklemek gerek.
-            extraTypeList.AddRange(InputPropertyTypes);
-            extraTypeList.AddRange(extraTypeList.SelectMany(t => GetAllBaseTypes(t)).ToList());
-            _namespaces = RuleCompilerGlobals.Namespaces
-                .Concat(extraTypeList.Select(t => t.Namespace).OfType<string>())
-                .Distinct().ToList();
-            _references = RuleCompilerGlobals.References
-                .Concat(extraTypeList.Select(t => t.Assembly))
-                .Distinct().ToList();
-
-            //bilgi amaçlı olarak namespace'leri ekliyoruz. yoksa namespace'ler script textinin içinde olmamalı.
-            _ruleHeader = "///using " + string.Join(";\r\n///using ", _namespaces) + ";";
+            var genericArgs = type.GetGenericArguments();
+            var typeName = type.Name.Split('`')[0];
+            return $"{typeName}<{string.Join(", ", genericArgs.Select(GetFriendlyName))}>";
         }
+        return type.Name;
+    }
 
-        private static IEnumerable<Type> GetAllBaseTypes(Type type)
+    /// <summary>
+    /// Derlenmemiş bir kuralı derler. Kuralların giriş ve çıkış tipleri aynı olmalıdır.
+    /// </summary>
+    /// <param name="ruleName">Her kuralın bir ismi olmalı.</param>
+    /// <param name="ruleString">Derlenmemiş kural</param>
+    /// <param name="extraTypes">Eğer sadece bu derlemeye özel tipler varsa buradan verebilirsiniz. Buradan verdiğiniz tipler derleyicinin global tiplerini etkilemez.</param>
+    /// <returns></returns>
+    public async Task<CompiledRule<TInput, TReturn>> CompileAsync(string ruleName,
+        string ruleString, params Type[] extraTypes)
+    {
+        return (await CompileAsync(ruleName, new List<string> { ruleString }, extraTypes)).FirstOrDefault() ?? throw new InvalidOperationException("Compilation failed");
+    }
+
+    /// <summary>
+    /// Derlenmemiş birden çok kuralı derler. Kuralların giriş ve çıkış tipleri aynı olmalıdır.
+    /// </summary>
+    /// <param name="ruleName">Her kuralın bir ismi olmalı.</param>
+    /// <param name="ruleStrings">Derlenmemiş kurallar</param>
+    /// <param name="extraTypes">Eğer sadece bu derlemeye özel tipler varsa buradan verebilirsiniz. Buradan verdiğiniz tipler derleyicinin global tiplerini etkilemez.</param>
+    /// <returns></returns>
+    public async Task<IList<CompiledRule<TInput, TReturn>>> CompileAsync(string ruleName, IEnumerable<string> ruleStrings, params Type[] extraTypes)
+    {
+        if (ruleStrings == null)
+            throw new ArgumentNullException(nameof(ruleStrings));
+
+        string? ruleBodyString = null;
+        try
         {
-            var baseType = type.BaseType;
-            while (baseType != null)
+            var extraNamespaces = new List<string>();
+            var extraReferences = new List<Assembly>();
+            var extraRuleHeader = "";
+            if (extraTypes != null && extraTypes.Any())
             {
-                yield return baseType;
-                baseType = baseType.BaseType;
+                extraNamespaces = extraTypes.Select(t => t.Namespace).OfType<string>().ToList();
+                extraReferences = extraTypes.Select(t => t.Assembly).Distinct().ToList();
+                extraRuleHeader = "\r\n///Added for only this compilation:\r\n///using " + string.Join(";\r\n///using ", _namespaces) + ";";
             }
-        }
-
-        // ReSharper disable StaticMemberInGenericType
-        private static readonly string StatementBodyTemplate =
-            "Input => {{\r\n" +
-            "{0}\r\n" +
-            "}}";
-
-        private static readonly string ExpressionTreeTemplate =
-            "Input => {0}";
-
-        private static readonly string TupleTemplate =
-            $"new Tuple< Func<{GetFriendlyName(InputType)}, {GetFriendlyName(ReturnType)}>,Expression<Func<{GetFriendlyName(InputType)}, {GetFriendlyName(ReturnType)}>> >(\r\n" +
-            "{0},\r\n" +
-            "{1}\r\n" +
-            ")";
-
-        private static readonly string RuleTemplate =
-            $"///Generated by RuleCompiler v{RuleCompilerGlobals.Version:F}\r\n\r\n" +
-            "{0}{1}\r\n" + //header
-            "//Implementations:\r\n" +
-            $"return new Tuple< Func<{GetFriendlyName(InputType)}, {GetFriendlyName(ReturnType)}>,Expression<Func<{GetFriendlyName(InputType)}, {GetFriendlyName(ReturnType)}>> >[]" +
-            "{{\r\n" +
-            "{2}" + //Func ve expressionlar.
-            "\r\n}};";
-
-        // ReSharper restore StaticMemberInGenericType
-
-        private static string GetFriendlyName(Type type)
-        {
-            if (type.IsGenericType)
-            {
-                var genericArgs = type.GetGenericArguments();
-                var typeName = type.Name.Split('`')[0];
-                return $"{typeName}<{string.Join(", ", genericArgs.Select(GetFriendlyName))}>";
-            }
-            return type.Name;
-        }
-
-        /// <summary>
-        /// Derlenmemiş bir kuralı derler. Kuralların giriş ve çıkış tipleri aynı olmalıdır.
-        /// </summary>
-        /// <param name="ruleName">Her kuralın bir ismi olmalı.</param>
-        /// <param name="ruleString">Derlenmemiş kural</param>
-        /// <param name="extraTypes">Eğer sadece bu derlemeye özel tipler varsa buradan verebilirsiniz. Buradan verdiğiniz tipler derleyicinin global tiplerini etkilemez.</param>
-        /// <returns></returns>
-        public async Task<CompiledRule<TInput, TReturn>> CompileAsync(string ruleName,
-            string ruleString, params Type[] extraTypes)
-        {
-            return (await CompileAsync(ruleName, new List<string> { ruleString }, extraTypes)).FirstOrDefault() ?? throw new InvalidOperationException("Compilation failed");
-        }
-
-        /// <summary>
-        /// Derlenmemiş birden çok kuralı derler. Kuralların giriş ve çıkış tipleri aynı olmalıdır.
-        /// </summary>
-        /// <param name="ruleName">Her kuralın bir ismi olmalı.</param>
-        /// <param name="ruleStrings">Derlenmemiş kurallar</param>
-        /// <param name="extraTypes">Eğer sadece bu derlemeye özel tipler varsa buradan verebilirsiniz. Buradan verdiğiniz tipler derleyicinin global tiplerini etkilemez.</param>
-        /// <returns></returns>
-        public async Task<IList<CompiledRule<TInput, TReturn>>> CompileAsync(string ruleName, IEnumerable<string> ruleStrings, params Type[] extraTypes)
-        {
-            if (ruleStrings == null)
-                throw new ArgumentNullException(nameof(ruleStrings));
-
-            string? ruleBodyString = null;
-            try
-            {
-                var extraNamespaces = new List<string>();
-                var extraReferences = new List<Assembly>();
-                var extraRuleHeader = "";
-                if (extraTypes != null && extraTypes.Any())
-                {
-                    extraNamespaces = extraTypes.Select(t => t.Namespace).OfType<string>().ToList();
-                    extraReferences = extraTypes.Select(t => t.Assembly).Distinct().ToList();
-                    extraRuleHeader = "\r\n///Added for only this compilation:\r\n///using " + string.Join(";\r\n///using ", _namespaces) + ";";
-                }
 
                 ruleBodyString = MakeRuleBody(ruleStrings, extraRuleHeader);
+
+#if DEBUG_RULES
+#warning Kural debugging etkinleştirildi. Kurallar yavaş derlenecektir. Temizlemek için projenin ayarlarından DEBUG_RULES direktifini kaldırın.
+                Debug.WriteLine("Kural debugging etkinleştirildi. Kurallar yavaş derlenecektir. Temizlemek için projenin ayarlarından DEBUG_RULES direktifini kaldırın.", "RuleEngine");
+                var tempDir = Path.Combine(Path.GetTempPath(), "RuleEngineDebug");
+                var tempFile = Path.Combine(tempDir, $"{ruleName}_{Guid.NewGuid()}.csx");
+                Directory.CreateDirectory(tempDir);
+                if (File.Exists(tempFile))
+                {
+                    File.SetAttributes(tempFile, FileAttributes.Normal);
+                    File.Delete(tempFile);
+                }
+
+                File.WriteAllText(tempFile, ruleBodyString, Encoding.UTF8);
+                File.SetAttributes(tempFile, FileAttributes.ReadOnly);
+#endif
 
                 var script = CSharpScript.Create<Tuple<Func<TInput, TReturn>, Expression<Func<TInput, TReturn>>>[]>(
                     ruleBodyString,
                     ScriptOptions.Default
                         .WithImports(_namespaces.Union(extraNamespaces).Distinct())
                         .WithReferences(_references.Union(extraReferences).Distinct())
+#if DEBUG_RULES
+                        .WithFilePath(tempFile)
+#endif
                 );
 
-                var result = await script.RunAsync();
-                return result.ReturnValue.Select(f => new CompiledRule<TInput, TReturn>
+                Tuple<Func<TInput, TReturn>, Expression<Func<TInput, TReturn>>>[]? debugFunction = null;
+#if DEBUG_RULES
+                var compilation = script.GetCompilation();
+
+                var syntaxTree = compilation.SyntaxTrees.First();
+
+                var encodingField = syntaxTree.GetType().GetField("_encodingOpt", BindingFlags.Instance | BindingFlags.NonPublic);
+                encodingField?.SetValue(syntaxTree, Encoding.UTF8);
+                var lazyTextField = syntaxTree.GetType().GetField("_lazyText", BindingFlags.Instance | BindingFlags.NonPublic);
+                lazyTextField?.SetValue(syntaxTree, SourceText.From(File.OpenRead(tempFile), Encoding.UTF8));
+
+                EmitResult emitResult;
+                using (var peStream = new MemoryStream())
+                {
+                    using (var pdbStream = new MemoryStream())
+                    {
+                        var emitOptions = new EmitOptions()
+                            .WithDebugInformationFormat(DebugInformationFormat.PortablePdb);
+
+                        emitResult = compilation.Emit(peStream, pdbStream, null, null, null, emitOptions);
+                        if (emitResult.Success)
+                        {
+                            peStream.Position = 0;
+                            pdbStream.Position = 0;
+                            var assembly = Assembly.Load(peStream.ToArray(), pdbStream.ToArray());
+                            var type = assembly.GetType("Submission#0");
+                            var method = type?.GetMethod("<Factory>", BindingFlags.Static | BindingFlags.Public);
+                            var submissionStates = new object[2];
+                            submissionStates[0] = null;
+                            if (method != null)
+                            {
+                                debugFunction =
+                                    await (method.Invoke(null, new object[] { submissionStates }) as
+                                               Task<Tuple<Func<TInput, TReturn>, Expression<Func<TInput, TReturn>>>[]> ??
+                                           new Task<Tuple<Func<TInput, TReturn>, Expression<Func<TInput, TReturn>>>[]>(() => null));
+                            }
+                        }
+                    }
+                }
+#endif
+
+                var result = debugFunction ?? (await script.RunAsync()).ReturnValue;
+                return result.Select(f => new CompiledRule<TInput, TReturn>
                 {
                     CompileTime = DateTime.Now,
                     Invoke = f.Item1,
                     Expression = f.Item2,
                     RuleString = ruleBodyString
-                }).ToList();
-            }
-            catch (Exception e)
-            {
-                throw new RuleCompilingException(e, ruleBodyString ?? string.Empty);
-            }
+            }).ToList();
         }
-
-        private string MakeRuleBody(IEnumerable<string> ruleStrings, string extraRuleHeader)
+        catch (Exception e)
         {
-            var tupleStrings = new List<string>();
-            foreach (var ruleString in ruleStrings)
+            throw new RuleCompilingException(e, ruleBodyString ?? string.Empty);
+        }
+    }
+
+    private string MakeRuleBody(IEnumerable<string> ruleStrings, string extraRuleHeader)
+    {
+        var tupleStrings = new List<string>();
+        foreach (var ruleString in ruleStrings)
+        {
+            if (_useExpressionTreeTemplate)
             {
-                if (_useExpressionTreeTemplate)
-                {
-                    var funcString = string.Format(ExpressionTreeTemplate,
-                        string.IsNullOrEmpty(ruleString) ?
+                var funcString = string.Format(ExpressionTreeTemplate,
+                    string.IsNullOrEmpty(ruleString) ?
                         $"default({GetFriendlyName(ReturnType)})" :
                         "\t\t//Expressions:\r\n" +
                         $"\t\t{ruleString}\r\n");
 
-                    tupleStrings.Add(string.Format(TupleTemplate, funcString, funcString));
-                }
-                else
-                {
-                    var funcString = ruleString;
-                    if (string.IsNullOrEmpty(ruleString))
-                        funcString = $"Output = default({GetFriendlyName(ReturnType)});";
-
-                    funcString = string.Format(StatementBodyTemplate,
-                        $"\tvar Output = new {GetFriendlyName(ReturnType)}();\r\n" +
-                        "\t\t//Expressions:\r\n" +
-                        $"\t{funcString}\r\n" +
-                        $"\treturn Output;\r\n");
-
-                    tupleStrings.Add(string.Format(TupleTemplate, funcString, "null")); //Statement body'lerin expressionları null.
-                }
+                tupleStrings.Add(string.Format(TupleTemplate, funcString, funcString));
             }
-
-            return string.Format(RuleTemplate,
-                _ruleHeader,
-                extraRuleHeader,
-                string.Join(",\r\n", tupleStrings));
-        }
-
-        /// <summary>
-        /// Verilen ruleString'inin syntax hatası olup olmadığını kontrol eder.
-        /// </summary>
-        /// <param name="ruleString"></param>
-        /// <returns></returns>
-        public List<RuleSyntaxError> CheckSyntax(string ruleString)
-        {
-            var ruleBodyString = MakeRuleBody(new List<string> { ruleString }, "");
-            var expressionStartsAt = Regex.Split(ruleBodyString, "\r\n").ToList().FindIndex(line => line.TrimStart().StartsWith("//Expressions:")) + 1;
-            var tree = CSharpSyntaxTree.ParseText(ruleBodyString);
-            var diagnostics = tree.GetDiagnostics();
-            return diagnostics.Where(r => r.Severity == DiagnosticSeverity.Error).Select(d =>
+            else
             {
-                var line = d.Location.GetLineSpan();
-                return new RuleSyntaxError
-                {
-                    ChracterAt = line.StartLinePosition.Character,
-                    Line = line.StartLinePosition.Line - expressionStartsAt,
-                    HelpLink = d.Descriptor.HelpLinkUri,
-                    Category = d.Descriptor.Category,
-                    Description = d.Descriptor.Description.ToString(),
-                    Title = d.Descriptor.Title.ToString()
-                };
-            }).ToList();
+                var funcString = ruleString;
+                if (string.IsNullOrEmpty(ruleString))
+                    funcString = $"Output = default({GetFriendlyName(ReturnType)});";
+
+                funcString = string.Format(StatementBodyTemplate,
+                    $"\tvar Output = new {GetFriendlyName(ReturnType)}();\r\n" +
+                    "\t\t//Expressions:\r\n" +
+                    $"\t{funcString}\r\n" +
+                    $"\treturn Output;\r\n");
+
+                tupleStrings.Add(string.Format(TupleTemplate, funcString, "null")); //Statement body'lerin expressionları null.
+            }
         }
+
+        return string.Format(RuleTemplate,
+            _ruleHeader,
+            extraRuleHeader,
+            string.Join(",\r\n", tupleStrings));
     }
 
+    /// <summary>
+    /// Verilen ruleString'inin syntax hatası olup olmadığını kontrol eder.
+    /// </summary>
+    /// <param name="ruleString"></param>
+    /// <returns></returns>
+    public List<RuleSyntaxError> CheckSyntax(string ruleString)
+    {
+        var ruleBodyString = MakeRuleBody(new List<string> { ruleString }, "");
+        var expressionStartsAt = Regex.Split(ruleBodyString, "\r\n").ToList().FindIndex(line => line.TrimStart().StartsWith("//Expressions:")) + 1;
+        var tree = CSharpSyntaxTree.ParseText(ruleBodyString);
+        var diagnostics = tree.GetDiagnostics();
+        return diagnostics.Where(r => r.Severity == DiagnosticSeverity.Error).Select(d =>
+        {
+            var line = d.Location.GetLineSpan();
+            return new RuleSyntaxError
+            {
+                ChracterAt = line.StartLinePosition.Character,
+                Line = line.StartLinePosition.Line - expressionStartsAt,
+                HelpLink = d.Descriptor.HelpLinkUri,
+                Category = d.Descriptor.Category,
+                Description = d.Descriptor.Description.ToString(),
+                Title = d.Descriptor.Title.ToString()
+            };
+        }).ToList();
+    }
+}
+
+/// <summary>
+/// 
+/// </summary>
+public static class RuleCompilerGlobals
+{
     /// <summary>
     /// 
     /// </summary>
-    public static class RuleCompilerGlobals
+    public static double Version = 1.4;
+
+    public static readonly List<string> Namespaces = new List<string>
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        public static double Version = 1.4;
+        "System",
+        "System.Collections",
+        "System.Collections.Generic",
+        "System.IO",
+        "System.Linq",
+        "System.Net",
+        "System.Text",
+        "System.Threading.Tasks",
+        "System.Linq.Expressions"
+    };
 
-        public static readonly List<string> Namespaces = new List<string>
-        {
-            "System",
-            "System.Collections.Generic",
-            "System.Linq",
-            "System.Text",
-            "System.Threading.Tasks",
-            "System.Linq.Expressions"
-        };
-
-        public static readonly List<Assembly> References = new List<Assembly>
-        {
-            typeof(object).Assembly,
-            typeof(Enumerable).Assembly,
-            typeof(Task).Assembly
-        };
-    }
+    public static readonly List<Assembly> References = new List<Assembly>
+    {
+        typeof(object).Assembly,
+        typeof(Enumerable).Assembly,
+        typeof(Task).Assembly,
+        typeof(Expression).Assembly,
+        typeof(IPAddress).Assembly,
+        typeof(File).Assembly,
+        typeof(Tuple).Assembly,
+        typeof(ValueTuple).Assembly
+    };
 
     /// <summary>
-    /// Kural derleme anında gerçekleşen hatalar için.
+    /// Varsayılan tiplere ekleme yapar.
     /// </summary>
-    public class RuleCompilingException : Exception
+    /// <param name="types"></param>
+    public static void AddTypes(params Type[] types)
     {
-        public string RuleString { get; private set; }
+        if (types == null)
+            return;
 
-        /// <summary>
-        /// Oluşan exception ve kural stringi ile oluşturulur.
-        /// </summary>
-        /// <param name="exception"></param>
-        /// <param name="ruleString"></param>
-        public RuleCompilingException(Exception exception, string ruleString)
-            : base(exception.Message, exception)
+        foreach (var type in types)
         {
-            RuleString = ruleString;
+            if (!string.IsNullOrEmpty(type.Namespace) && !Namespaces.Contains(type.Namespace))
+                Namespaces.Add(type.Namespace);
+            if (!References.Contains(type.Assembly))
+                References.Add(type.Assembly);
         }
     }
+}
+
+/// <summary>
+/// Kural derleme anında gerçekleşen hatalar için.
+/// </summary>
+public class RuleCompilingException : Exception
+{
+    public string RuleString { get; private set; }
 
     /// <summary>
-    /// Kural çalışma zamanı hataları için.
+    /// Oluşan exception ve kural stringi ile oluşturulur.
     /// </summary>
-    public class RuleRuntimeException : Exception
+    /// <param name="exception"></param>
+    /// <param name="ruleString"></param>
+    public RuleCompilingException(Exception exception, string ruleString)
+        : base(exception.Message, exception)
     {
-        public string Input { get; set; }
-        public string Code { get; set; }
-        public int? Priority { get; set; }
+        RuleString = ruleString;
+    }
+}
 
-        /// <summary>
-        /// Oluşan exception ve kural stringi ile oluşturulur.
-        /// </summary>
-        /// <param name="exception"></param>
-        /// <param name="ruleString"></param>
-        public RuleRuntimeException(Exception exception, string ruleString, string input, string code)
-            : base(exception.Message, exception)
-        {
-            Code = code;
-            Input = input;
-        }
+/// <summary>
+/// Kural çalışma zamanı hataları için.
+/// </summary>
+public class RuleRuntimeException : Exception
+{
+    public string Input { get; set; }
+    public string Code { get; set; }
+    public int? Priority { get; set; }
+
+    /// <summary>
+    /// Oluşan exception ve kural stringi ile oluşturulur.
+    /// </summary>
+    /// <param name="exception"></param>
+    /// <param name="ruleString"></param>
+    public RuleRuntimeException(Exception exception, string ruleString, string input, string code)
+        : base(exception.Message, exception)
+    {
+        Code = code;
+        Input = input;
     }
 }

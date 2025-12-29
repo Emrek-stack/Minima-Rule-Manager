@@ -1,23 +1,33 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using RuleEngine.Core.Abstractions;
+using RuleEngine.Core.Rule.DesignTime;
 
-namespace RuleEngine.Core.Extensions
+namespace RuleEngine.Core.Extensions;
+
+/// <summary>
+/// Extension methods for registering RuleEngine services
+/// </summary>
+public static class ServiceCollectionExtensions
 {
     /// <summary>
-    /// Extension methods for registering RuleEngine services
+    /// Adds RuleEngine core services to the service collection
     /// </summary>
-    public static class ServiceCollectionExtensions
+    /// <param name="services">Service collection</param>
+    /// <returns>Service collection for chaining</returns>
+    public static IServiceCollection AddRuleEngine(this IServiceCollection services)
     {
-        /// <summary>
-        /// Adds RuleEngine core services to the service collection
-        /// </summary>
-        /// <param name="services">Service collection</param>
-        /// <returns>Service collection for chaining</returns>
-        public static IServiceCollection AddRuleEngine(this IServiceCollection services)
-        {
-            // Gordios RuleEngine uses static RuleManager, no DI registration needed
-            return services;
-        }
+        // Gordios RuleEngine uses static RuleManager, no DI registration needed
+        return services;
+    }
+
+    /// <summary>
+    /// Adds design-time metadata services for rule editor tooling.
+    /// </summary>
+    /// <param name="services">Service collection</param>
+    /// <returns>Service collection for chaining</returns>
+    public static IServiceCollection AddRuleEngineDesignTime(this IServiceCollection services)
+    {
+        services.TryAddSingleton<MetadataManagerInitializer>();
+        return services;
     }
 }

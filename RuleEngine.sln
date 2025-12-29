@@ -27,6 +27,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RuleEngineDemoVue.Server", 
 EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "ruleenginedemovue.client", "demo\RuleEngineDemoVue\ruleenginedemovue.client\ruleenginedemovue.client.esproj", "{B8759790-6051-407D-A9E4-59AEC7956993}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RuleEngine.Demo", "demo\RuleEngine.Demo\RuleEngine.Demo.csproj", "{98AEA6C0-9A9B-4456-B373-2B7BDBABB406}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -133,6 +135,18 @@ Global
 		{B8759790-6051-407D-A9E4-59AEC7956993}.Release|x64.Build.0 = Debug|Any CPU
 		{B8759790-6051-407D-A9E4-59AEC7956993}.Release|x86.ActiveCfg = Debug|Any CPU
 		{B8759790-6051-407D-A9E4-59AEC7956993}.Release|x86.Build.0 = Debug|Any CPU
+		{98AEA6C0-9A9B-4456-B373-2B7BDBABB406}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{98AEA6C0-9A9B-4456-B373-2B7BDBABB406}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{98AEA6C0-9A9B-4456-B373-2B7BDBABB406}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{98AEA6C0-9A9B-4456-B373-2B7BDBABB406}.Debug|x64.Build.0 = Debug|Any CPU
+		{98AEA6C0-9A9B-4456-B373-2B7BDBABB406}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{98AEA6C0-9A9B-4456-B373-2B7BDBABB406}.Debug|x86.Build.0 = Debug|Any CPU
+		{98AEA6C0-9A9B-4456-B373-2B7BDBABB406}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{98AEA6C0-9A9B-4456-B373-2B7BDBABB406}.Release|Any CPU.Build.0 = Release|Any CPU
+		{98AEA6C0-9A9B-4456-B373-2B7BDBABB406}.Release|x64.ActiveCfg = Release|Any CPU
+		{98AEA6C0-9A9B-4456-B373-2B7BDBABB406}.Release|x64.Build.0 = Release|Any CPU
+		{98AEA6C0-9A9B-4456-B373-2B7BDBABB406}.Release|x86.ActiveCfg = Release|Any CPU
+		{98AEA6C0-9A9B-4456-B373-2B7BDBABB406}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -148,5 +162,6 @@ Global
 		{2037762A-7440-43B2-8532-AC9676AE9CBD} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{005D53ED-C4E9-4409-8179-E29FD2D4300F} = {2037762A-7440-43B2-8532-AC9676AE9CBD}
 		{B8759790-6051-407D-A9E4-59AEC7956993} = {2037762A-7440-43B2-8532-AC9676AE9CBD}
+		{98AEA6C0-9A9B-4456-B373-2B7BDBABB406} = {2037762A-7440-43B2-8532-AC9676AE9CBD}
 	EndGlobalSection
 EndGlobal

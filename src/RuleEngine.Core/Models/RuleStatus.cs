@@ -1,23 +1,22 @@
-namespace RuleEngine.Core.Models
+namespace RuleEngine.Core.Models;
+
+/// <summary>
+/// Represents the status of a rule
+/// </summary>
+public enum RuleStatus
 {
     /// <summary>
-    /// Represents the status of a rule
+    /// Rule is in draft state and not active
     /// </summary>
-    public enum RuleStatus
-    {
-        /// <summary>
-        /// Rule is in draft state and not active
-        /// </summary>
-        Draft = 0,
+    Draft = 0,
 
-        /// <summary>
-        /// Rule is active and can be executed
-        /// </summary>
-        Active = 1,
+    /// <summary>
+    /// Rule is active and can be executed
+    /// </summary>
+    Active = 1,
 
-        /// <summary>
-        /// Rule is disabled and cannot be executed
-        /// </summary>
-        Disabled = 2
-    }
+    /// <summary>
+    /// Rule is disabled and cannot be executed
+    /// </summary>
+    Disabled = 2
 }

@@ -1,6 +1,5 @@
 using FluentAssertions;
 using RuleEngine.Core.Models;
-using Xunit;
 
 namespace RuleEngine.Integration.Tests;
 
