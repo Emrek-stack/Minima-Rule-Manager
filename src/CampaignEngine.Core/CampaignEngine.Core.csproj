@@ -7,9 +7,16 @@
     <LangVersion>latest</LangVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Minima.CampaignEngine.Core</PackageId>
-    <Version>1.1.9</Version>
-    <Authors>CampaignEngine Team</Authors>
+    <Version>1.1.11</Version>
+    <Authors>Emre Karahan</Authors>
     <Description>Core campaign engine with rule-based system for .NET 8/9/10</Description>
+    <PackageProjectUrl>https://github.com/Emrek-stack/Minima-Rule-Manager</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Emrek-stack/Minima-Rule-Manager</RepositoryUrl>
+    <PackageTags>rule-engine;rules;expression;evaluation;roslyn;csharp</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>rulemanager_icon_64.png</PackageIcon>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageTags>campaign;rules;engine;ecommerce</PackageTags>
   </PropertyGroup>
 

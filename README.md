@@ -544,36 +544,22 @@ public class CampaignManagerTests
 
 ```bash
 # RuleEngine.Core
-dotnet add package Minima.RuleEngine.Core --version 1.1.8
+dotnet add package Minima.RuleEngine.Core --version 1.1.11
 
 # RuleEngine.Sqlite
-dotnet add package Minima.RuleEngine.Sqlite --version 1.1.8
+dotnet add package Minima.RuleEngine.Sqlite --version 1.1.11
 
 # CampaignEngine.Core
-dotnet add package Minima.CampaignEngine.Core --version 1.1.8
-```
-
-### Package Creation
-
-```bash
-# Build all packages
-dotnet pack --configuration Release
-
-# Build specific package
-dotnet pack src/RuleEngine.Core/RuleEngine.Core.csproj --configuration Release
-dotnet pack src/CampaignEngine.Core/CampaignEngine.Core.csproj --configuration Release
-
-# Publish to NuGet
-dotnet nuget push bin/Release/Minima.RuleEngine.Core.1.1.8.nupkg --api-key YOUR_API_KEY --source https://api.nuget.org/v3/index.json
+dotnet add package Minima.CampaignEngine.Core --version 1.1.11
 ```
 
 ### Package Information
 
 | Package | Version | .NET Support | Download |
 |---------|---------|--------------|----------|
-| Minima.RuleEngine.Core | 1.1.8 | 8.0, 9.0, 10.0 | [![NuGet](https://img.shields.io/nuget/v/Minima.RuleEngine.Core.svg)](https://www.nuget.org/packages/Minima.RuleEngine.Core/) |
-| Minima.RuleEngine.Sqlite | 1.1.8 | 8.0, 9.0, 10.0 | [![NuGet](https://img.shields.io/nuget/v/Minima.RuleEngine.Sqlite.svg)](https://www.nuget.org/packages/Minima.RuleEngine.Sqlite/) |
-| Minima.CampaignEngine.Core | 1.1.8 | 8.0, 9.0, 10.0 | [![NuGet](https://img.shields.io/nuget/v/Minima.CampaignEngine.Core.svg)](https://www.nuget.org/packages/Minima.CampaignEngine.Core/) |
+| Minima.RuleEngine.Core | 1.1.11 | 8.0, 9.0, 10.0 | [![NuGet](https://img.shields.io/nuget/v/Minima.RuleEngine.Core.svg)](https://www.nuget.org/packages/Minima.RuleEngine.Core/) |
+| Minima.RuleEngine.Sqlite | 1.1.11 | 8.0, 9.0, 10.0 | [![NuGet](https://img.shields.io/nuget/v/Minima.RuleEngine.Sqlite.svg)](https://www.nuget.org/packages/Minima.RuleEngine.Sqlite/) |
+| Minima.CampaignEngine.Core | 1.1.11 | 8.0, 9.0, 10.0 | [![NuGet](https://img.shields.io/nuget/v/Minima.CampaignEngine.Core.svg)](https://www.nuget.org/packages/Minima.CampaignEngine.Core/) |
 
 ### Recent NuGet Updates
 
@@ -770,8 +756,7 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ## 👥 Authors
 
-- RuleEngine Team
-- CampaignEngine Team
+- Emre Karahan
 
 ## 🔗 Links
 

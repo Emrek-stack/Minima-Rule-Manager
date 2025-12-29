@@ -5,8 +5,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PackageId>Minima.RuleEngine.Core</PackageId>
-    <Version>1.1.9</Version>
-    <Authors>RuleEngine Team</Authors>
+    <Version>1.1.11</Version>
+    <Authors>Emre Karahan</Authors>
     <Description>A modern, extensible rule engine for .NET 8/9/10 with C# expression evaluation using Roslyn.</Description>
     <PackageProjectUrl>https://github.com/Emrek-stack/Minima-Rule-Manager</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Emrek-stack/Minima-Rule-Manager</RepositoryUrl>
