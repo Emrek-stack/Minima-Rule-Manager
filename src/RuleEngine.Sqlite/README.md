@@ -1,6 +1,6 @@
-# RuleEngine
+# RuleEngine.Sqlite
 
-A modern, extensible rule engine for .NET 8 with SQLite persistence, built with Microsoft.Extensions.DependencyInjection and Entity Framework Core.
+SQLite persistence package for RuleEngine.Core, built with Microsoft.Extensions.DependencyInjection and Entity Framework Core.
 
 ## Features
 
@@ -17,7 +17,7 @@ A modern, extensible rule engine for .NET 8 with SQLite persistence, built with 
 ### 1. Install the Package
 
 ```bash
-dotnet add package RuleEngine.Sqlite
+dotnet add package Minima.RuleEngine.Sqlite
 ```
 
 ### 2. Register Services
@@ -29,6 +29,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add RuleEngine with SQLite persistence
 builder.Services.AddRuleEngineWithSqlite("Data Source=ruleengine.db");
+
+// Optional: enable design-time metadata services
+builder.Services.AddRuleEngineDesignTime();
 
 var app = builder.Build();
 ```
@@ -264,6 +267,11 @@ if (!result.Success)
 }
 ```
 
+## NuGet Notes
+
+- Package: `Minima.RuleEngine.Sqlite`
+- Recent updates: System.Text.Json persistence for rule metadata/parameters, design-time metadata integration
+
 ## Testing
 
 The library includes comprehensive unit tests and integration tests:
@@ -292,10 +300,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Changelog
 
-### v1.0.0
-- Initial release
-- C# expression evaluation using Roslyn
-- SQLite persistence with Entity Framework Core
-- Rule versioning and activation
-- Audit logging
-- Microsoft.Extensions.DependencyInjection integration
+### Recent Updates
+- Uses System.Text.Json for rule metadata and parameter persistence
+- Design-time metadata is supported via RuleEngine.Core (AddRuleEngineDesignTime)

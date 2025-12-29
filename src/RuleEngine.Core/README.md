@@ -1,15 +1,16 @@
-# RuleEngine
+# RuleEngine.Core
 
-A modern, extensible rule engine for .NET 8 with SQLite persistence, built with Microsoft.Extensions.DependencyInjection and Entity Framework Core.
+Core rule engine library for .NET with Roslyn-based compilation, design-time metadata, and extensible execution flow.
 
 ## Features
 
-- **Rule Definition**: Create rules with metadata, versioning, and status management
+- **Rule Definition**: Create rules with metadata, versioning, parameters, and status management
 - **C# Expression Evaluation**: Execute C# expressions using Roslyn scripting
-- **SQLite Persistence**: Store rules and execution history in SQLite database
+- **Design-Time Metadata**: Rule editor metadata, categories, and parameter definitions
 - **Versioning**: Create multiple versions of rules and activate specific versions
-- **Audit Logging**: Track all rule executions with input/output and performance metrics
-- **Dependency Injection**: Built-in support for Microsoft.Extensions.DependencyInjection
+- **Audit Logging**: Track rule executions with input/output and performance metrics
+- **RuleManager Flow**: Gordios-style `IRuleManager` + `IRuleProvider` orchestration
+- **DEBUG_RULES**: Optional PDB generation for debugging compiled rules
 - **Extensible**: Plugin architecture for custom rule evaluators
 
 ## Quick Start
@@ -17,17 +18,22 @@ A modern, extensible rule engine for .NET 8 with SQLite persistence, built with 
 ### 1. Install the Package
 
 ```bash
-dotnet add package RuleEngine.Sqlite
+dotnet add package Minima.RuleEngine.Core
 ```
 
 ### 2. Register Services
 
 ```csharp
+using RuleEngine.Core.Extensions;
 using RuleEngine.Sqlite.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add RuleEngine with SQLite persistence
+// Core services and design-time metadata
+builder.Services.AddRuleEngine();
+builder.Services.AddRuleEngineDesignTime();
+
+// Add RuleEngine with SQLite persistence (optional)
 builder.Services.AddRuleEngineWithSqlite("Data Source=ruleengine.db");
 
 var app = builder.Build();
@@ -220,6 +226,72 @@ foreach (var ruleRequest in sampleRules)
 }
 ```
 
+## Design-Time Metadata
+
+Design-time metadata drives rule editor UX (catalogs, parameters, categories).
+
+```csharp
+var ruleRequest = new CreateRuleRequest
+{
+    Name = "Minimum Order Total",
+    Description = "Order total must exceed a minimum threshold.",
+    Content = new RuleContent
+    {
+        PredicateExpression = "Input.TotalAmount > 100m",
+        ResultExpression = "true",
+        Metadata = new Dictionary<string, object>
+        {
+            ["DesignTime"] = new DesignTimeMetadata
+            {
+                Name = "Order.MinTotal",
+                Title = "Minimum Order Total",
+                Description = "Checks if order total is above a threshold.",
+                ExpressionFormat = "Input.TotalAmount > {0}",
+                DisplayFormat = "Order total > {0} TL",
+                IsPredicate = true,
+                Parameters = new List<ParameterDefinition>
+                {
+                    new NumericParameter("Minimum Total")
+                },
+                Categories = new List<RuleCategoryMetadata>
+                {
+                    new RuleCategoryMetadata { Id = 1, Title = "Order" }
+                }
+            }
+        }
+    }
+};
+```
+
+Design-time metadata is collected by `MetadataManager` (wired via `AddRuleEngineDesignTime`).
+
+## RuleManager Flow
+
+Use the Gordios-style manager/provider flow if you need dynamic rule selection per input:
+
+```csharp
+public sealed class MyRuleProvider : IRuleProvider
+{
+    public Task<RuleDefinition?> GetRuleDefinitionAsync(object input)
+        => _repository.GetActiveVersionAsync("my_rule_id");
+
+    public Task<bool> ValidateRuleAsync(RuleDefinition rule, object input)
+        => Task.FromResult(true);
+}
+
+ruleManager.RegisterProvider("my_rule_type", new MyRuleProvider());
+var result = await ruleManager.ExecuteRuleAsync("my_rule_type", input);
+```
+
+## DEBUG_RULES (PDB)
+
+To debug compiled rules, add `DEBUG_RULES` to your build defines. This enables Roslyn PDB generation but slows compilation.
+
+## NuGet Notes
+
+- Package: `Minima.RuleEngine.Core`
+- Recent updates: design-time metadata catalog, RuleManager/IRuleProvider flow, DEBUG_RULES PDB support
+
 ## Custom Evaluators
 
 You can create custom rule evaluators by implementing `IRuleEvaluator`:
@@ -292,10 +364,8 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Changelog
 
-### v1.0.0
-- Initial release
-- C# expression evaluation using Roslyn
-- SQLite persistence with Entity Framework Core
-- Rule versioning and activation
-- Audit logging
-- Microsoft.Extensions.DependencyInjection integration
+### Recent Updates
+- Added design-time metadata parsing with categories and parameter definitions
+- Added `IRuleManager`/`IRuleProvider` orchestration flow
+- Added DEBUG_RULES PDB debugging support in RuleCompiler
+- Switched core serialization to `System.Text.Json` for rule metadata/parameters

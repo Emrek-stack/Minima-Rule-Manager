@@ -29,6 +29,9 @@ Modern rule engine with Roslyn-based C# expression evaluation.
 - ✅ Memory cache support
 - ✅ Syntax validation and error handling
 - ✅ Generic input/output models
+- ✅ Design-time metadata catalog (parameters + categories)
+- ✅ RuleManager/IRuleProvider orchestration flow
+- ✅ DEBUG_RULES PDB debugging support
 
 ### RuleEngine.Sqlite
 SQLite-based persistence layer.
@@ -52,6 +55,9 @@ Campaign management system built on top of RuleEngine.Core.
 - ✅ Memory cache support
 - ✅ Dependency Injection
 - ✅ Custom repository support
+- ✅ Available campaign resolution per product
+- ✅ Basket apply/remove helpers (UseCampaign/DeleteCampaign)
+- ✅ Demo seed helper for quick testing
 
 ## 🚀 Quick Start
 
@@ -568,6 +574,12 @@ dotnet nuget push bin/Release/Minima.RuleEngine.Core.1.1.8.nupkg --api-key YOUR_
 | Minima.RuleEngine.Core | 1.1.8 | 8.0, 9.0, 10.0 | [![NuGet](https://img.shields.io/nuget/v/Minima.RuleEngine.Core.svg)](https://www.nuget.org/packages/Minima.RuleEngine.Core/) |
 | Minima.RuleEngine.Sqlite | 1.1.8 | 8.0, 9.0, 10.0 | [![NuGet](https://img.shields.io/nuget/v/Minima.RuleEngine.Sqlite.svg)](https://www.nuget.org/packages/Minima.RuleEngine.Sqlite/) |
 | Minima.CampaignEngine.Core | 1.1.8 | 8.0, 9.0, 10.0 | [![NuGet](https://img.shields.io/nuget/v/Minima.CampaignEngine.Core.svg)](https://www.nuget.org/packages/Minima.CampaignEngine.Core/) |
+
+### Recent NuGet Updates
+
+- `Minima.RuleEngine.Core`: design-time metadata catalog, RuleManager/IRuleProvider flow, DEBUG_RULES PDB support
+- `Minima.RuleEngine.Sqlite`: System.Text.Json persistence for rule metadata/parameters, design-time metadata integration
+- `Minima.CampaignEngine.Core`: available campaign resolution, basket apply/remove helpers, demo seed helper
 
 ## 🔧 Advanced Usage
 

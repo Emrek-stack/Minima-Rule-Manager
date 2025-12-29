@@ -11,6 +11,8 @@ RuleEngine.Core üzerine inşa edilmiş modern kampanya yönetim sistemi.
 - **Öncelik Sistemi**: Kampanya önceliklendirme
 - **Cache Desteği**: Memory cache ile performans optimizasyonu
 - **Dependency Injection**: Modern .NET DI pattern
+- **Sepet Entegrasyonu**: `ITravelProduct` ile kampanya kullanım/geri alma
+- **Uygun Kampanyalar**: Ürün bazında available campaign hesaplama
 
 ## 📦 Kurulum
 
@@ -109,6 +111,29 @@ var available = campaignManager.GetAvailableCampaigns(
     productKey: "PRD-001",
     productsInTransaction: products,
     input: input);
+```
+
+### 7. Sepet Kampanya Kullan / Geri Al
+
+```csharp
+products = campaignManager.UseCampaign(
+    productKey: "PRD-001",
+    campaignCode: "CITYGIFT50",
+    productsInTransaction: products);
+
+campaignManager.DeleteCampaign("CITYGIFT50", products);
+```
+
+### 8. Demo Seed (Hazir Kampanyalar)
+
+```csharp
+using CampaignEngine.Core.Demo;
+using CampaignEngine.Core.Repositories;
+
+if (campaignRepository is InMemoryCampaignRepository memoryRepo)
+{
+    CampaignSeed.SeedToRepository(memoryRepo, moduleId: 1);
+}
 ```
 
 ## 📋 Kampanya Tipleri
@@ -303,3 +328,8 @@ public void Should_Apply_Discount_Campaign()
 - [RuleEngine.Core Dokümantasyonu](../RuleEngine.Core/README.md)
 - [Örnekler](../../examples/)
 - [API Referansı](docs/api.md)
+
+## 🧾 NuGet Notları
+
+- Paket: `Minima.CampaignEngine.Core`
+- Bu paketle gelen yeni eklemeler: available campaign hesaplama, kullanım/geri alma akisi, demo seed yardimcisi
