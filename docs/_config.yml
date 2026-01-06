@@ -1,0 +1,9 @@
+title: RuleEngine
+description: Enterprise-ready rule and campaign engine for .NET
+theme: jekyll-theme-cayman
+markdown: kramdown
+kramdown:
+  input: GFM
+plugins:
+  - jekyll-seo-tag
+show_downloads: false

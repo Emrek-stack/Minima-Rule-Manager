@@ -1,3 +1,8 @@
+---
+title: Ecommerce Examples (EN)
+layout: default
+---
+
 # E-Commerce Examples for RuleEngine
 
 This documentation shows how to use the RuleEngine library in e-commerce systems. Examples are ordered from simple to complex rules.

@@ -1,3 +1,8 @@
+---
+title: Ecommerce Examples (TR)
+layout: default
+---
+
 # E-ticaret İçin RuleEngine Kullanım Örnekleri
 
 Bu dokümantasyon, RuleEngine kütüphanesini e-ticaret sistemlerinde nasıl kullanacağınızı gösterir. Örnekler basit kurallardan karmaşık kurallara doğru sıralanmıştır.

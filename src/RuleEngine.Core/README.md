@@ -1,6 +1,6 @@
 # RuleEngine.Core
 
-Core rule engine library for .NET with Roslyn-based compilation, design-time metadata, and extensible execution flow.
+Core rule engine library for .NET with Roslyn-based compilation, design-time metadata, and extensible execution flow. This package is designed for enterprise usage with versioning, audit logging, and extensibility.
 
 ## Features
 
@@ -290,7 +290,14 @@ To debug compiled rules, add `DEBUG_RULES` to your build defines. This enables R
 ## NuGet Notes
 
 - Package: `Minima.RuleEngine.Core`
+- Supported frameworks: `net8.0`, `net9.0`, `net10.0`
 - Recent updates: design-time metadata catalog, RuleManager/IRuleProvider flow, DEBUG_RULES PDB support
+
+## Documentation
+
+- Getting started: `../../docs/getting-started.md`
+- Architecture: `../../docs/architecture.md`
+- Rule authoring: `../../docs/rule-authoring.md`
 
 ## Custom Evaluators
 

@@ -1,6 +1,6 @@
 # RuleEngine.Sqlite
 
-SQLite persistence package for RuleEngine.Core, built with Microsoft.Extensions.DependencyInjection and Entity Framework Core.
+SQLite persistence package for RuleEngine.Core, built with Microsoft.Extensions.DependencyInjection and Entity Framework Core. Suitable for enterprise workloads with audit logging and versioning.
 
 ## Features
 
@@ -270,7 +270,14 @@ if (!result.Success)
 ## NuGet Notes
 
 - Package: `Minima.RuleEngine.Sqlite`
+- Supported frameworks: `net8.0`, `net9.0`, `net10.0`
 - Recent updates: System.Text.Json persistence for rule metadata/parameters, design-time metadata integration
+
+## Documentation
+
+- SQLite provider: `../../docs/sqlite-provider.md`
+- Operations: `../../docs/operations.md`
+- Security: `../../docs/security.md`
 
 ## Testing
 

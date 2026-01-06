@@ -1,6 +1,6 @@
 # CampaignEngine.Core
 
-RuleEngine.Core üzerine inşa edilmiş modern kampanya yönetim sistemi.
+RuleEngine.Core uzerine insa edilmis modern kampanya yonetim sistemi. Kurumsal senaryolar icin onceliklendirme, kota ve audit odakli calisir.
 
 ## 🎯 Özellikler
 
@@ -325,9 +325,9 @@ public void Should_Apply_Discount_Campaign()
 
 ## 📚 Daha Fazla Bilgi
 
-- [RuleEngine.Core Dokümantasyonu](../RuleEngine.Core/README.md)
-- [Örnekler](../../examples/)
-- [API Referansı](docs/api.md)
+- [RuleEngine.Core Dokumantasyonu](../RuleEngine.Core/README.md)
+- [Ornekler](../../examples/)
+- [Genel Dokumantasyon](../../docs/index.md)
 
 ## 🧾 NuGet Notları
 

@@ -2,7 +2,9 @@
 
 [![.NET](https://img.shields.io/badge/.NET-8.0%20%7C%209.0%20%7C%2010.0-512BD4)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![NuGet](https://img.shields.io/badge/NuGet-v1.0.3-blue)](https://www.nuget.org/)
+[![NuGet](https://img.shields.io/nuget/v/Minima.RuleEngine.Core.svg)](https://www.nuget.org/packages/Minima.RuleEngine.Core/)
+[![NuGet](https://img.shields.io/nuget/v/Minima.RuleEngine.Sqlite.svg)](https://www.nuget.org/packages/Minima.RuleEngine.Sqlite/)
+[![NuGet](https://img.shields.io/nuget/v/Minima.CampaignEngine.Core.svg)](https://www.nuget.org/packages/Minima.CampaignEngine.Core/)
 
 Modern, extensible, and high-performance rule engine and campaign management system. Create dynamic business rules with Roslyn-based C# expression evaluation, persist with SQLite or custom repositories, and build campaign systems.
 
@@ -760,7 +762,7 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ## 🔗 Links
 
-- [Documentation](docs/)
+- [Documentation (GitHub Pages-ready)](docs/)
 - [Examples](examples/)
 - [Changelog](CHANGELOG.md)
 - [Contributing Guide](CONTRIBUTING.md)
