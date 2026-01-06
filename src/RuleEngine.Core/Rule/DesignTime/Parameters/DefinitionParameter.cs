@@ -1,17 +1,17 @@
 namespace RuleEngine.Core.Rule.DesignTime.Parameters;
 
 /// <summary>
-/// 
+/// Definition-based parameter values.
 /// </summary>
 public class DefinitionParameter : ArrayParameter
 {
     /// <summary>
-    /// DefinitionTypeEnum enum elemanları olabilir
+    /// May contain DefinitionTypeEnum values.
     /// </summary>
     public string DefinitionType { get; set; } = string.Empty;
 
     /// <summary>
-    /// 
+    /// Creates a definition parameter.
     /// </summary>
     /// <param name="title"></param>
     /// <param name="type"></param>

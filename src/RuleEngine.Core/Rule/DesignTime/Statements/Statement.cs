@@ -1,17 +1,17 @@
 namespace RuleEngine.Core.Rule.DesignTime.Statements;
 
 /// <summary>
-/// Kural cümleciklerindeki her bir parça
+/// Represents a part of a rule statement tree.
 /// </summary>
 public abstract class Statement
 {
     /// <summary>
-    /// Parse edilmemiş kural stringi
+    /// Raw expression string.
     /// </summary>
     public string ExpressionString { get; set; } = string.Empty;
 
     /// <summary>
-    /// 
+    /// Statement type name.
     /// </summary>
     public string Type => GetType().Name;
 }

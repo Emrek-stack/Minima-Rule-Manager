@@ -8,7 +8,7 @@ using RuleEngine.Core.Rule.DesignTime.Parameters;
 namespace RuleEngine.Core.Rule.DesignTime;
 
 /// <summary>
-/// Mevcut metadatalara erişim sağlamak için kullanılır.
+/// Provides access to design-time metadata.
 /// </summary>
 public static class MetadataManager
 {
@@ -23,17 +23,17 @@ public static class MetadataManager
     public static bool Initialized => _initialized > 0;
 
     /// <summary>
-    /// Cache'lenmiş kural metadataları.
+    /// Cached rule metadata.
     /// </summary>
     public static ConcurrentDictionary<string, NamedRuleMetadata> NamedRuleMetadatas { get; } = new ConcurrentDictionary<string, NamedRuleMetadata>();
 
     /// <summary>
-    /// Kategoriye göre kural isimleri.
+    /// Rule names by category.
     /// </summary>
     public static ConcurrentDictionary<string, List<string>> RulesByCategory { get; } = new ConcurrentDictionary<string, List<string>>();
 
     /// <summary>
-    /// Kategori id ve title'ları
+    /// Category IDs and titles.
     /// </summary>
     public static ConcurrentDictionary<int, string> Categories { get; } = new ConcurrentDictionary<int, string>();
 
@@ -41,7 +41,7 @@ public static class MetadataManager
         private static DateTime LastUpdateTime;
 
     /// <summary>
-    /// MetadataManager için repository ve logger bağımlılıklarını ayarlar.
+    /// Configures repository and logger dependencies for MetadataManager.
     /// </summary>
     public static void Configure(IRuleRepository ruleRepository, ILogger logger, TimeSpan? refreshInterval = null)
     {
@@ -67,7 +67,7 @@ public static class MetadataManager
     }
 
     /// <summary>
-    /// Mevcut kural metadatalarını yeniden yükler.
+    /// Reloads current rule metadata.
     /// </summary>
         public static async Task RefreshAsync()
         {
@@ -143,7 +143,7 @@ public static class MetadataManager
     }
 
     /// <summary>
-    /// Mevcut metadata yüklenene kadar bekler.
+    /// Blocks until metadata is initialized.
     /// </summary>
     public static void WaitInitialization()
     {
@@ -165,10 +165,10 @@ public static class MetadataManager
     }
 
     /// <summary>
-    /// Kategoriye göre metadata listesi döner
+    /// Returns metadata list filtered by category.
     /// </summary>
-    /// <param name="isPredicate">Metadatayı kural yada sonuç metadatadası olarak filtrelemektedir.</param>
-    /// <param name="categories">Metadataları kategori bazlı filtrelemektedir</param>
+    /// <param name="isPredicate">Filters metadata as predicate or result metadata.</param>
+    /// <param name="categories">Filters metadata by category IDs.</param>
     /// <returns></returns>
     public static Dictionary<string, NamedRuleMetadata> GetMetadaByCategory(bool isPredicate = true, params int[] categories)
     {
@@ -191,7 +191,7 @@ public static class MetadataManager
     }
 
     /// <summary>
-    /// Önceden tanımlı rule metadata'ları. Statik olarak erişmek için kullanılır.
+    /// Predefined rule metadata, available as static accessors.
     /// </summary>
     public static class PredefinedMetadatas
     {

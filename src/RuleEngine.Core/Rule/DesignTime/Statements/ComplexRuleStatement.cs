@@ -1,17 +1,17 @@
 namespace RuleEngine.Core.Rule.DesignTime.Statements;
 
 /// <summary>
-/// Kompleks kural
+/// Complex rule statement.
 /// </summary>
 public class ComplexRuleStatement : Statement
 {
     /// <summary>
-    /// Kompleks kurallara isim verilebilir. İsimli kurallardaki gibi zorunlu değildir.
+    /// Complex rules can have optional names.
     /// </summary>
     public string Name { get; set; }
 
     /// <summary>
-    /// 
+    /// Creates a complex rule statement.
     /// </summary>
     /// <param name="ruleStr"></param>
     /// <param name="name"></param>

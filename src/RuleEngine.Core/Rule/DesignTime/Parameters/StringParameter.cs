@@ -1,12 +1,12 @@
 namespace RuleEngine.Core.Rule.DesignTime.Parameters;
 
 /// <summary>
-/// String değerleri ifade eden parametre tanımlaması.
+/// Parameter definition that represents string values.
 /// </summary>
 public class StringParameter : ParameterDefinition
 {
     /// <summary>
-    /// String değerleri ifade eden parametre oluşturur.
+    /// Creates a parameter definition for string values.
     /// </summary>
     public StringParameter(string title)
         : base(title, "\"{0}\"")

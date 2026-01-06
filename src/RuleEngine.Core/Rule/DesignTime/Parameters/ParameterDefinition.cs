@@ -1,15 +1,15 @@
 namespace RuleEngine.Core.Rule.DesignTime.Parameters;
 
 /// <summary>
-/// Parametre tanımlamaları için taban sınıf
+/// Base class for parameter definitions.
 /// </summary>
 public abstract class ParameterDefinition
 {
     /// <summary>
-    /// Parametre oluşturur.
+    /// Creates a parameter definition.
     /// </summary>
-    /// <param name="title">Parametrenin etiketi</param>
-    /// <param name="displayFormat">Gösterim şekli.</param>
+    /// <param name="title">Parameter label.</param>
+    /// <param name="displayFormat">Display format.</param>
     protected ParameterDefinition(string title, string displayFormat = "{0}")
     {
         DisplayFormat = displayFormat;
@@ -22,22 +22,22 @@ public abstract class ParameterDefinition
     }
 
     /// <summary>
-    /// Serialize işlemlerinde tipi algılamak için kullanıyoruz.
+    /// Used to identify the type during serialization.
     /// </summary>
     public string Type => GetType().Name;
 
     /// <summary>
-    /// Parametrenin etiketi.
+    /// Parameter label.
     /// </summary>
     public string Title { get; set; } = string.Empty;
 
     /// <summary>
-    /// Parametreyi ifade eden gösterim şekli.
+    /// Display format for the parameter.
     /// </summary>
     public string DisplayFormat { get; set; } = "{0}";
 
     /// <summary>
-    /// <see cref="DisplayFormat"/>'a göre etiket üretir. Her parametrenin gösterim şekli farklı olabilir.
+    /// Builds a display label using <see cref="DisplayFormat"/>.
     /// </summary>
     /// <param name="parameterValue"></param>
     /// <returns></returns>
@@ -47,17 +47,17 @@ public abstract class ParameterDefinition
     }
 
     /// <summary>
-    /// Parametrenin açıklaması, ne işe yaradığı
+    /// Parameter description and purpose.
     /// </summary>
     public string? Description { get; set; }
 
     /// <summary>
-    /// Presentation kısmına yani UI'a veri taşımak için kullanılır.
+    /// Used to provide data to the presentation/UI layer.
     /// </summary>
     public Dictionary<string, string>? Data { get; set; }
 
     /// <summary>
-    /// Verilen değeri, parametrenin yazılış şekline göre çıktı verir.
+    /// Generates an expression based on the parameter format.
     /// </summary>
     /// <param name="parameterValue"></param>
     /// <returns></returns>

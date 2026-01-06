@@ -5,12 +5,12 @@ using RuleEngine.Core.Rule.DesignTime.Statements;
 namespace RuleEngine.Core.Rule.DesignTime.Metadatas;
 
 /// <summary>
-/// Kural kümesini ifade eder.
+/// Represents a rule tree.
 /// </summary>
 public sealed class RuleTreeMetadata : Metadata<RuleTreeStatement>
 {
     /// <summary>
-    /// Kural kümesi
+    /// Rule tree metadata.
     /// </summary>
     public RuleTreeMetadata()
     {

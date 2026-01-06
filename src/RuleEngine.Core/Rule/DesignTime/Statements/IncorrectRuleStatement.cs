@@ -1,12 +1,12 @@
 namespace RuleEngine.Core.Rule.DesignTime.Statements;
 
 /// <summary>
-/// Hatalı kuralları ifade eden sınıf
+/// Represents an invalid rule statement.
 /// </summary>
 public class IncorrectRuleStatement : Statement
 {
     /// <summary>
-    /// 
+    /// Creates an incorrect rule statement.
     /// </summary>
     /// <param name="ruleStr"></param>
     public IncorrectRuleStatement(string ruleStr)

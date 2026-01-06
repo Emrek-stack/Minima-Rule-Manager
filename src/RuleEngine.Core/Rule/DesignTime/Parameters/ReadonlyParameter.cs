@@ -1,12 +1,12 @@
 namespace RuleEngine.Core.Rule.DesignTime.Parameters;
 
 /// <summary>
-/// Değişmeyen sabit parametreler için kullanılır.
+/// Used for immutable constant parameters.
 /// </summary>
 public class ReadonlyParameter : ParameterDefinition
 {
     /// <summary>
-    /// Readonly değer
+    /// Constant value.
     /// </summary>
     public string ReadonlyValue { get; set; } = string.Empty;
 
@@ -17,7 +17,7 @@ public class ReadonlyParameter : ParameterDefinition
     }
 
     /// <summary>
-    /// 
+    /// Creates a readonly parameter.
     /// </summary>
     /// <param name="readonlyValue"></param>
     public ReadonlyParameter(string readonlyValue)

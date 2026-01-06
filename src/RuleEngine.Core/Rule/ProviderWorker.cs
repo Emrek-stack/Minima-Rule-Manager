@@ -5,7 +5,7 @@ using RuleEngine.Core.Extensions;
 namespace RuleEngine.Core.Rule;
 
 /// <summary>
-/// Provider'ların cache'lenmesi ve background processing için kullanılan base sınıf
+/// Base class for provider caching and background processing.
 /// </summary>
 public abstract class ProviderWorker
 {
@@ -41,7 +41,7 @@ public abstract class ProviderWorker
 }
 
 /// <summary>
-/// Provider'ların cache'lenmesi ve background processing için kullanılan generic sınıf
+/// Generic class for provider caching and background processing.
 /// </summary>
 /// <typeparam name="TRuleSet"></typeparam>
 /// <typeparam name="TInput"></typeparam>
@@ -82,14 +82,14 @@ public class ProviderWorker<TRuleSet, TInput, TOutput> : ProviderWorker
                         )
                 ) : default(DateTime);
 
-            //silinenleri alalım
+            // Remove deleted rule sets.
             var isExistDic = await _provider.IsExistsAsync(RuleSets.Keys.ToArray());
             foreach (var deletedKey in isExistDic.Where(kv => !kv.Value).Select(kv => kv.Key))
             {
                 RuleSets.TryRemove(deletedKey, out _);
             }
 
-            //değişenleri alalım.
+            // Fetch updated rule sets.
             var newRuleSets = await _provider.GenerateRuleSetsAsync(lastCompileTime);
             foreach (var newRuleSet in newRuleSets)
             {

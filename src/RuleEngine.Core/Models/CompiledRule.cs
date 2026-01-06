@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis.Scripting;
 namespace RuleEngine.Core.Models;
 
 /// <summary>
-/// Derlenmiş olan bir kural
+/// Compiled rule.
 /// </summary>
 /// <typeparam name="TInput"></typeparam>
 /// <typeparam name="TReturn"></typeparam>
@@ -37,17 +37,17 @@ public class CompiledRule<TInput, TReturn>
     }
 
     /// <summary>
-    /// Derlenme zamanı
+    /// Compile time.
     /// </summary>
     public DateTime CompileTime { get; set; }
 
     /// <summary>
-    /// Kuralı çalıştırır.
+    /// Executes the rule.
     /// </summary>
     public Func<TInput, TReturn> Invoke { get; set; }
 
     /// <summary>
-    /// Eğer kural destekliyorsa expression'nı döner. Şu an için sadece predicate rule'lar expression olarak dönebilir.
+    /// Returns the expression when supported. Currently only predicate rules expose expressions.
     /// </summary>
     public Expression<Func<TInput, TReturn>> Expression {get; set;}
 
@@ -55,7 +55,7 @@ public class CompiledRule<TInput, TReturn>
 }
 
 /// <summary>
-/// Global kural modeli
+/// Global rule model.
 /// </summary>
 /// <typeparam name="TInput"></typeparam>
 public class GlobalRuleParams<TInput>

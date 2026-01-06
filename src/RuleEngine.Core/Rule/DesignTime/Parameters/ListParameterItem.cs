@@ -1,16 +1,16 @@
 namespace RuleEngine.Core.Rule.DesignTime.Parameters;
 
 /// <summary>
-/// Liste parametresindeki her bir elemanı ifade eder.
+/// Represents an item within a list parameter.
 /// </summary>
 public class ListParameterItem
 {
     /// <summary>
-    /// Liste parametre elemanı oluşturur.
+    /// Creates a list parameter item.
     /// </summary>
-    /// <param name="title">Etiket, girilmesi zorunludur.</param>
-    /// <param name="expressionFormat">Değerin hangi formatta yazılacağı. Girilmezse değeri olduğu gibi yazar.</param>
-    /// <param name="description">Bu elemananın açıklaması.</param>
+    /// <param name="title">Label (required).</param>
+    /// <param name="expressionFormat">Format used for the value. If empty, the raw value is used.</param>
+    /// <param name="description">Item description.</param>
     public ListParameterItem(string title, string expressionFormat = "{0}", string description = "")
     {
         Title = title;
@@ -26,17 +26,17 @@ public class ListParameterItem
     }
 
     /// <summary>
-    /// Liste elemanının başlığı.
+    /// Item title.
     /// </summary>
     public string Title { get; set; }
 
     /// <summary>
-    /// Liste elemanının açıklaması.
+    /// Item description.
     /// </summary>
     public string Description { get; set; }
 
     /// <summary>
-    /// Liste elemanının formatı.
+    /// Item format.
     /// </summary>
     public string ExpressionFormat { get; set; }
 }

@@ -4,35 +4,35 @@ using RuleEngine.Core.Models;
 namespace RuleEngine.Core.Rule;
 
 /// <summary>
-/// Seçim ve sonuç kurallarından oluşan kural kümesi. Tek bir seçime karşılık ve tek bir sonuç çıktı verir.
+/// Rule set composed of predicate and result rules. Produces a single result for a single match.
 /// </summary>
-/// <remarks>Eğer ruleset'i türetip özelleştirmemişseniz oluşturmak için <see cref="RuleSet"/> altındaki yardımcı metodlarını kullanabilirsiniz.</remarks>
-/// <typeparam name="TInput">Giriş modeli</typeparam>
-/// <typeparam name="TOutput">Çıkış modeli</typeparam>
+/// <remarks>If you do not derive a custom ruleset, use helper methods under <see cref="RuleSet"/> to create one.</remarks>
+/// <typeparam name="TInput">Input model.</typeparam>
+/// <typeparam name="TOutput">Output model.</typeparam>
 public class RuleSet<TInput, TOutput> where TInput : RuleInputModel
 {
     /// <summary>
-    /// Her bir kuralın unique bir idsi bulunmalı.
+    /// Each rule must have a unique ID.
     /// </summary>
     public string Code { get; internal set; }
 
     /// <summary>
-    /// Derlenmiş seçim kuralı
+    /// Compiled predicate rule.
     /// </summary>
     public CompiledRule<TInput, bool> PredicateRule { get; internal set; }
 
     /// <summary>
-    /// Derlenmiş sonuç kuralı
+    /// Compiled result rule.
     /// </summary>
     public CompiledRule<TInput, TOutput> ResultRule { get; set; }
 
     /// <summary>
-    /// Öncelik
+    /// Priority.
     /// </summary>
     public int Priority { get; internal set; }
 
     /// <summary>
-    /// Yeni bir ruleset tipi üretilirken ruleset'e ait diğer propları setlememek adına eklendi. Harici çağrılmaması gerekli.
+    /// Parameterless constructor used by factories; do not call directly.
     /// </summary>
     public RuleSet()
     {
@@ -41,7 +41,7 @@ public class RuleSet<TInput, TOutput> where TInput : RuleInputModel
         ResultRule = null!;
     }
     /// <summary>
-    /// Kural setini oluşturan base ctor.
+    /// Base constructor for rule sets.
     /// </summary>
     /// <param name="code"></param>
     /// <param name="predicateRule"></param>
@@ -63,7 +63,7 @@ public class RuleSet<TInput, TOutput> where TInput : RuleInputModel
     }
 
     /// <summary>
-    /// Seçim kuralını <paramref name="input"/> parametresine göre çalıştırır.
+    /// Executes the predicate rule with the provided <paramref name="input"/>.
     /// </summary>
     /// <param name="input"></param>
     /// <returns></returns>
@@ -81,7 +81,7 @@ public class RuleSet<TInput, TOutput> where TInput : RuleInputModel
     }
 
     /// <summary>
-    /// Sonuç kuralını <paramref name="input"/> parametresine göre çalıştırır.
+    /// Executes the result rule with the provided <paramref name="input"/>.
     /// </summary>
     /// <param name="input"></param>
     /// <returns></returns>
@@ -110,14 +110,14 @@ public class RuleSet<TInput, TOutput> where TInput : RuleInputModel
 }
 
 /// <summary>
-/// Çoklu sonuçlar içinden seçim yapabilen kural seti.
+/// Rule set that can select among multiple results.
 /// </summary>
 /// <typeparam name="TInput"></typeparam>
 /// <typeparam name="TOutput"></typeparam>
 public class MultiResultRuleSet<TInput, TOutput> : RuleSet<TInput, TOutput> where TInput : RuleInputModel
 {
     /// <summary>
-    /// Çoklu sonuçlar içinden seçim yapabilen kural seti.
+    /// Creates a multi-result rule set.
     /// </summary>
     /// <param name="code"></param>
     /// <param name="predicateRule"></param>
@@ -129,7 +129,7 @@ public class MultiResultRuleSet<TInput, TOutput> : RuleSet<TInput, TOutput> wher
     }
 
     /// <summary>
-    /// Çoklu sonuçlar içinden seçim yapabilen kural seti.
+    /// Creates a multi-result rule set.
     /// </summary>
     /// <param name="code"></param>
     /// <param name="predicateRule"></param>
@@ -145,14 +145,14 @@ public class MultiResultRuleSet<TInput, TOutput> : RuleSet<TInput, TOutput> wher
     }
 
     /// <summary>
-    /// Çoklu sonuçlar içinden seçim yapabilen kural seti.
+    /// Creates a multi-result rule set.
     /// </summary>
     public MultiResultRuleSet()
     {
     }
 
     /// <summary>
-    /// Sonuç kuralını <paramref name="input"/> parametresine göre çalıştırır ve çoklu sonuçlar içinden birini seçer.
+    /// Executes the result rule and selects from available results.
     /// </summary>
     /// <param name="input"></param>
     /// <returns></returns>
@@ -198,19 +198,19 @@ public class MultiResultRuleSet<TInput, TOutput> : RuleSet<TInput, TOutput> wher
 }
 
 /// <summary>
-/// <c>RuleSet</c> oluşturmak için yardımcı metodlar
+/// Helper methods for creating <c>RuleSet</c> instances.
 /// </summary>
 public static class RuleSet
 {
     /// <summary>
-    /// Önceden derlenmiş kurallar ile tek sonuç üreten rule set oluşturur.
+    /// Creates a single-result rule set from compiled rules.
     /// </summary>
-    /// <typeparam name="TInput">Seçim ve sonuç için giriş modeli</typeparam>
-    /// <typeparam name="TOutput">Sonuç kuralının çıkış modeli</typeparam>
-    /// <param name="code">Her bir kuralın unique bir idsi bulunmalı.</param>
-    /// <param name="predicateRule">Derlenmiş seçim kuralı</param>
-    /// <param name="resultRule">Derlenmiş sonuç kuralı</param>
-    /// <param name="priority">Öncelik</param>
+    /// <typeparam name="TInput">Input model for predicate and result.</typeparam>
+    /// <typeparam name="TOutput">Output model for the result rule.</typeparam>
+    /// <param name="code">Unique rule ID.</param>
+    /// <param name="predicateRule">Compiled predicate rule.</param>
+    /// <param name="resultRule">Compiled result rule.</param>
+    /// <param name="priority">Priority.</param>
     /// <returns></returns>
     public static RuleSet<TInput, TOutput> Create<TInput, TOutput>(
         string code,
@@ -240,14 +240,14 @@ public static class RuleSet
     }
 
     /// <summary>
-    /// Önceden derlenmiş kurallar ile çoklu sonuçlar içinden bir sonucu seçen kural seti oluşturur.
+    /// Creates a multi-result rule set from compiled rules.
     /// </summary>
-    /// <typeparam name="TInput">Seçim ve sonuç için giriş modeli</typeparam>
-    /// <typeparam name="TOutput">Sonuç kuralının çıkış modeli</typeparam>
-    /// <param name="code">Her bir kuralın unique bir idsi bulunmalı.</param>
-    /// <param name="predicateRule">Derlenmiş seçim kuralı</param>
-    /// <param name="resultRule">Derlenmiş sonuç kuralı</param>
-    /// <param name="priority">Öncelik</param>
+    /// <typeparam name="TInput">Input model for predicate and result.</typeparam>
+    /// <typeparam name="TOutput">Output model for the result rule.</typeparam>
+    /// <param name="code">Unique rule ID.</param>
+    /// <param name="predicateRule">Compiled predicate rule.</param>
+    /// <param name="resultRule">Compiled result rule.</param>
+    /// <param name="priority">Priority.</param>
     /// <returns></returns>
     public static MultiResultRuleSet<TInput, TOutput> CreateMultiResult<TInput, TOutput>(
         string code,
@@ -260,14 +260,14 @@ public static class RuleSet
     }
 
     /// <summary>
-    /// Önceden derlenmiş kurallar ile çoklu sonuçlar içinden bir sonucu seçen kural seti oluşturur.
+    /// Creates a multi-result rule set from compiled rules.
     /// </summary>
-    /// <typeparam name="TInput">Seçim ve sonuç için giriş modeli</typeparam>
-    /// <typeparam name="TOutput">Sonuç kuralının çıkış modeli</typeparam>
-    /// <param name="code">Her bir kuralın unique bir idsi bulunmalı.</param>
-    /// <param name="predicateRule">Derlenmiş seçim kuralı</param>
-    /// <param name="resultRules">Sonuç seçim kuralı ve sonuç kurallarının derlenmiş halleri.</param>
-    /// <param name="priority">Öncelik</param>
+    /// <typeparam name="TInput">Input model for predicate and result.</typeparam>
+    /// <typeparam name="TOutput">Output model for the result rule.</typeparam>
+    /// <param name="code">Unique rule ID.</param>
+    /// <param name="predicateRule">Compiled predicate rule.</param>
+    /// <param name="resultRules">Compiled predicate/result rule pairs.</param>
+    /// <param name="priority">Priority.</param>
     /// <returns></returns>
     public static MultiResultRuleSet<TInput, TOutput> CreateMultiResult<TInput, TOutput>(
         string code,
@@ -280,14 +280,14 @@ public static class RuleSet
     }
 
     /// <summary>
-    /// Derlenmemiş kurallar ile tek sonuç üreten rule set oluşturur.
+    /// Creates a single-result rule set from uncompiled rules.
     /// </summary>
-    /// <typeparam name="TInput">Seçim ve sonuç için giriş modeli</typeparam>
-    /// <typeparam name="TOutput">Sonuç kuralının çıkış modeli</typeparam>
-    /// <param name="code">Her bir kuralın unique bir idsi bulunmalı.</param>
-    /// <param name="predicateRuleString">Derlenmemiş seçim kuralı</param>
-    /// <param name="resultRuleString">Derlenmemiş sonuç kuralı</param>
-    /// <param name="priority">Öncelik</param>
+    /// <typeparam name="TInput">Input model for predicate and result.</typeparam>
+    /// <typeparam name="TOutput">Output model for the result rule.</typeparam>
+    /// <param name="code">Unique rule ID.</param>
+    /// <param name="predicateRuleString">Uncompiled predicate rule.</param>
+    /// <param name="resultRuleString">Uncompiled result rule.</param>
+    /// <param name="priority">Priority.</param>
     /// <returns></returns>
     public static async Task<RuleSet<TInput, TOutput>> CreateAsync<TInput, TOutput>(
         string code,
@@ -302,14 +302,14 @@ public static class RuleSet
     }
 
     /// <summary>
-    /// Derlenmemiş kurallar ile çoklu sonuçlar içinden bir sonucu seçen kural seti oluşturur.
+    /// Creates a multi-result rule set from uncompiled rules.
     /// </summary>
-    /// <typeparam name="TInput">Seçim ve sonuç için giriş modeli</typeparam>
-    /// <typeparam name="TOutput">Sonuç kuralının çıkış modeli</typeparam>
-    /// <param name="code">Her bir kuralın unique bir idsi bulunmalı.</param>
-    /// <param name="predicateRuleString">Derlenmemiş seçim kuralı</param>
-    /// <param name="resultRuleString">Derlenmemiş sonuç kuralı</param>
-    /// <param name="priority">Öncelik</param>
+    /// <typeparam name="TInput">Input model for predicate and result.</typeparam>
+    /// <typeparam name="TOutput">Output model for the result rule.</typeparam>
+    /// <param name="code">Unique rule ID.</param>
+    /// <param name="predicateRuleString">Uncompiled predicate rule.</param>
+    /// <param name="resultRuleString">Uncompiled result rule.</param>
+    /// <param name="priority">Priority.</param>
     /// <returns></returns>
     public static async Task<MultiResultRuleSet<TInput, TOutput>> CreateMultiResultAsync<TInput, TOutput>(
         string code,
@@ -324,15 +324,15 @@ public static class RuleSet
     }
 
     /// <summary>
-    /// Derlenmemiş kurallar ile çoklu sonuçlar içinden bir sonucu seçen kural seti oluşturur.
+    /// Creates a multi-result rule set from uncompiled rules.
     /// </summary>
-    /// <typeparam name="TInput">Seçim ve sonuç için giriş modeli</typeparam>
-    /// <typeparam name="TOutput">Sonuç kuralının çıkış modeli</typeparam>
-    /// <param name="code">Her bir kuralın unique bir idsi bulunmalı.</param>
-    /// <param name="predicateRuleString">Derlenmemiş seçim kuralı</param>
-    /// <param name="resultRules">Sonuç seçim kuralı ve sonuç kurallarının derlenmemiş halleri.</param>
-    /// <param name="priority">Öncelik</param>
-    /// <param name="extraTypes">Eğer bu derleme işlemi için ekstra tipler girmek isterseniz bu parametreden belirtin. Bu tipler sadece bu derlemeden geçerli olur.</param>
+    /// <typeparam name="TInput">Input model for predicate and result.</typeparam>
+    /// <typeparam name="TOutput">Output model for the result rule.</typeparam>
+    /// <param name="code">Unique rule ID.</param>
+    /// <param name="predicateRuleString">Uncompiled predicate rule.</param>
+    /// <param name="resultRules">Uncompiled predicate/result rule pairs.</param>
+    /// <param name="priority">Priority.</param>
+    /// <param name="extraTypes">Additional types for this compilation only.</param>
     /// <returns></returns>
     public static async Task<MultiResultRuleSet<TInput, TOutput>> CreateMultiResultAsync<TInput, TOutput>(
         string code,

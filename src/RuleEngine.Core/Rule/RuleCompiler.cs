@@ -11,14 +11,14 @@ using RuleEngine.Core.Models;
 namespace RuleEngine.Core.Rule;
 
 /// <summary>
-/// Kural derleyicisi.
+/// Rule compiler.
 /// </summary>
 /// <remarks>
-/// <para>Bir kez oluşturup static olarak saklayın, aynı giriş çıkışlar için tekrar tekrar kullanın, thread-safe.</para>
-/// <para>Kuralları debug edebilmek için pdblerin oluşturulması gerekmektedir, bu da derleme işlemini aşırı şekilde yavaşlatmaktadır. Bu yüzden belli bir kuralı debug yapabilmek için RuleCompiler'ın bulunduğu projenin ayarlarında Conditional Symbols altında DEBUG_RULES direktifini tanımlayıp debug işlemini aktifleştiriniz. </para>
+/// <para>Create once and reuse; thread-safe for the same input/output types.</para>
+/// <para>To debug rules, PDB generation is required and slows compilation. Enable DEBUG_RULES in the project build symbols to turn it on.</para>
 /// </remarks>
-/// <typeparam name="TInput">Giriş modeli</typeparam>
-/// <typeparam name="TReturn">Çıkış modeli</typeparam>
+/// <typeparam name="TInput">Input model.</typeparam>
+/// <typeparam name="TReturn">Output model.</typeparam>
 public class RuleCompiler<TInput, TReturn>
 {
     private readonly bool _useExpressionTreeTemplate;
@@ -34,9 +34,9 @@ public class RuleCompiler<TInput, TReturn>
         .Select(p => p.PropertyType);
 
     /// <summary>
-    /// Bir kural derleyicisi oluşturulur.
+    /// Creates a rule compiler.
     /// </summary>
-    /// <param name="extraTypes">Kural içinde kullanılan ekstra tipler.</param>
+    /// <param name="extraTypes">Additional types used in rules.</param>
     public RuleCompiler(params Type[] extraTypes)
         : this(extraTypes.AsEnumerable())
     {
@@ -44,16 +44,16 @@ public class RuleCompiler<TInput, TReturn>
     }
 
     /// <summary>
-    /// Bir kural derleyicisi oluşturulur.
+    /// Creates a rule compiler.
     /// </summary>
-    /// <param name="extraTypes">Kural içinde kullanılan ekstra tipler.</param>
-    /// <param name="useExpressionTreeTemplate">ExpressionTree tek satırlık scriptler için kullanılır. Eğer birden fazla kod satırı çalıştırılacaksa bu parametreyi false setleyin. ExpressionTree Örnek: Input => (Input.A==1 && Input.B!=5),  StatementBody Örnek: Output => {return Output.A+5;}.</param>
+    /// <param name="extraTypes">Additional types used in rules.</param>
+    /// <param name="useExpressionTreeTemplate">Use expression trees for single-line scripts. Set false for multi-line statements. ExpressionTree example: Input => (Input.A==1 && Input.B!=5). StatementBody example: Output => {return Output.A+5;}.</param>
     public RuleCompiler(IEnumerable<Type>? extraTypes = null, bool useExpressionTreeTemplate = true)
     {
         _useExpressionTreeTemplate = useExpressionTreeTemplate;
         var extraTypeList = extraTypes?.ToList() ?? new List<Type>();
-        extraTypeList.Add(InputType); //giriş modelini de eklemek gerek.
-        extraTypeList.Add(ReturnType); //çıkış modelini de eklemek gerek.
+        extraTypeList.Add(InputType); // Include input model types.
+        extraTypeList.Add(ReturnType); // Include output model types.
         extraTypeList.AddRange(InputPropertyTypes);
         extraTypeList.AddRange(extraTypeList.SelectMany(t => GetAllBaseTypes(t)).ToList());
         _namespaces = RuleCompilerGlobals.Namespaces
@@ -63,7 +63,7 @@ public class RuleCompiler<TInput, TReturn>
             .Concat(extraTypeList.Select(t => t.Assembly))
             .Distinct().ToList();
 
-        //bilgi amaçlı olarak namespace'leri ekliyoruz. yoksa namespace'ler script textinin içinde olmamalı.
+        // Add namespaces for reference; do not include in script text.
         _ruleHeader = "///using " + string.Join(";\r\n///using ", _namespaces) + ";";
     }
 
@@ -115,11 +115,11 @@ public class RuleCompiler<TInput, TReturn>
     }
 
     /// <summary>
-    /// Derlenmemiş bir kuralı derler. Kuralların giriş ve çıkış tipleri aynı olmalıdır.
+    /// Compiles a single uncompiled rule.
     /// </summary>
-    /// <param name="ruleName">Her kuralın bir ismi olmalı.</param>
-    /// <param name="ruleString">Derlenmemiş kural</param>
-    /// <param name="extraTypes">Eğer sadece bu derlemeye özel tipler varsa buradan verebilirsiniz. Buradan verdiğiniz tipler derleyicinin global tiplerini etkilemez.</param>
+    /// <param name="ruleName">Rule name.</param>
+    /// <param name="ruleString">Uncompiled rule.</param>
+    /// <param name="extraTypes">Types only used for this compilation.</param>
     /// <returns></returns>
     public async Task<CompiledRule<TInput, TReturn>> CompileAsync(string ruleName,
         string ruleString, params Type[] extraTypes)
@@ -128,11 +128,11 @@ public class RuleCompiler<TInput, TReturn>
     }
 
     /// <summary>
-    /// Derlenmemiş birden çok kuralı derler. Kuralların giriş ve çıkış tipleri aynı olmalıdır.
+    /// Compiles multiple uncompiled rules.
     /// </summary>
-    /// <param name="ruleName">Her kuralın bir ismi olmalı.</param>
-    /// <param name="ruleStrings">Derlenmemiş kurallar</param>
-    /// <param name="extraTypes">Eğer sadece bu derlemeye özel tipler varsa buradan verebilirsiniz. Buradan verdiğiniz tipler derleyicinin global tiplerini etkilemez.</param>
+    /// <param name="ruleName">Rule name.</param>
+    /// <param name="ruleStrings">Uncompiled rules.</param>
+    /// <param name="extraTypes">Types only used for this compilation.</param>
     /// <returns></returns>
     public async Task<IList<CompiledRule<TInput, TReturn>>> CompileAsync(string ruleName, IEnumerable<string> ruleStrings, params Type[] extraTypes)
     {
@@ -155,8 +155,8 @@ public class RuleCompiler<TInput, TReturn>
                 ruleBodyString = MakeRuleBody(ruleStrings, extraRuleHeader);
 
 #if DEBUG_RULES
-#warning Kural debugging etkinleştirildi. Kurallar yavaş derlenecektir. Temizlemek için projenin ayarlarından DEBUG_RULES direktifini kaldırın.
-                Debug.WriteLine("Kural debugging etkinleştirildi. Kurallar yavaş derlenecektir. Temizlemek için projenin ayarlarından DEBUG_RULES direktifini kaldırın.", "RuleEngine");
+#warning Rule debugging enabled. Compilation will be slower. Remove DEBUG_RULES from project symbols to disable.
+                Debug.WriteLine("Rule debugging enabled. Compilation will be slower. Remove DEBUG_RULES from project symbols to disable.", "RuleEngine");
                 var tempDir = Path.Combine(Path.GetTempPath(), "RuleEngineDebug");
                 var tempFile = Path.Combine(tempDir, $"{ruleName}_{Guid.NewGuid()}.csx");
                 Directory.CreateDirectory(tempDir);
@@ -263,7 +263,7 @@ public class RuleCompiler<TInput, TReturn>
                     $"\t{funcString}\r\n" +
                     $"\treturn Output;\r\n");
 
-                tupleStrings.Add(string.Format(TupleTemplate, funcString, "null")); //Statement body'lerin expressionları null.
+                tupleStrings.Add(string.Format(TupleTemplate, funcString, "null")); // Statement-body expressions are null.
             }
         }
 
@@ -274,7 +274,7 @@ public class RuleCompiler<TInput, TReturn>
     }
 
     /// <summary>
-    /// Verilen ruleString'inin syntax hatası olup olmadığını kontrol eder.
+    /// Checks whether a rule string has syntax errors.
     /// </summary>
     /// <param name="ruleString"></param>
     /// <returns></returns>
@@ -336,7 +336,7 @@ public static class RuleCompilerGlobals
     };
 
     /// <summary>
-    /// Varsayılan tiplere ekleme yapar.
+    /// Adds to default types.
     /// </summary>
     /// <param name="types"></param>
     public static void AddTypes(params Type[] types)
@@ -355,14 +355,14 @@ public static class RuleCompilerGlobals
 }
 
 /// <summary>
-/// Kural derleme anında gerçekleşen hatalar için.
+/// Errors that occur during rule compilation.
 /// </summary>
 public class RuleCompilingException : Exception
 {
     public string RuleString { get; private set; }
 
     /// <summary>
-    /// Oluşan exception ve kural stringi ile oluşturulur.
+    /// Created with the thrown exception and rule string.
     /// </summary>
     /// <param name="exception"></param>
     /// <param name="ruleString"></param>
@@ -374,7 +374,7 @@ public class RuleCompilingException : Exception
 }
 
 /// <summary>
-/// Kural çalışma zamanı hataları için.
+/// Errors that occur during rule execution.
 /// </summary>
 public class RuleRuntimeException : Exception
 {
@@ -383,7 +383,7 @@ public class RuleRuntimeException : Exception
     public int? Priority { get; set; }
 
     /// <summary>
-    /// Oluşan exception ve kural stringi ile oluşturulur.
+    /// Created with the thrown exception and rule string.
     /// </summary>
     /// <param name="exception"></param>
     /// <param name="ruleString"></param>

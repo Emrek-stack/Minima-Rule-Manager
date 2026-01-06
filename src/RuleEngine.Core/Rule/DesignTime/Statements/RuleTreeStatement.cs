@@ -1,22 +1,22 @@
 namespace RuleEngine.Core.Rule.DesignTime.Statements;
 
 /// <summary>
-/// Birden fazla kuraldan oluşan kurallar kümesi
+/// Rule tree containing multiple statements.
 /// </summary>
 public class RuleTreeStatement : Statement
 {
     /// <summary>
-    /// Kümenin ismi. Girilmesi zorunlu değildir.
+    /// Tree name (optional).
     /// </summary>
     public string? Name { get; set; }
 
     /// <summary>
-    /// Alt kurallar
+    /// Child statements.
     /// </summary>
     public List<Statement> Statements { get; private set; }
 
     /// <summary>
-    /// 
+    /// Creates a rule tree statement.
     /// </summary>
     public RuleTreeStatement()
     {

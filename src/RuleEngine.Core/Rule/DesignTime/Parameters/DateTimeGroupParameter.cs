@@ -3,7 +3,7 @@ using System.Text.Json;
 namespace RuleEngine.Core.Rule.DesignTime.Parameters;
 
 /// <summary>
-/// DateTime değerleri ifade eden parametre tanımlaması.
+/// Parameter definition that represents DateTime values.
 /// </summary>
 public class DateTimeGroupParameter : ArrayParameter
 {

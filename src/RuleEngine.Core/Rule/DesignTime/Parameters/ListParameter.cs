@@ -1,12 +1,12 @@
 namespace RuleEngine.Core.Rule.DesignTime.Parameters;
 
 /// <summary>
-/// Liste tipindeki parametre tanımlaması. Seçilen parametre değerleri sabit olup, her birisinin kendi formatı vardır.
+/// List-typed parameter definition. Selected values are fixed and each has its own format.
 /// </summary>
 public class ListParameter : ParameterDefinition
 {
     /// <summary>
-    /// Liste tipinde parametre tanımlar.
+    /// Defines a list-typed parameter.
     /// </summary>
     public ListParameter(string title, string displayFormat = "{0}")
         : base(title, displayFormat)
@@ -29,7 +29,7 @@ public class ListParameter : ParameterDefinition
     }
 
     /// <summary>
-    /// Listede bulunan elemanlar. Dictionary'nin key'i elemanın değerini ifade eder.
+    /// List items. The dictionary key represents the item's value.
     /// </summary>
     public Dictionary<string, ListParameterItem> Items { get; set; }
 

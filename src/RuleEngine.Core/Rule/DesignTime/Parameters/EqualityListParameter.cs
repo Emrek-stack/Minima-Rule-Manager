@@ -1,18 +1,18 @@
 namespace RuleEngine.Core.Rule.DesignTime.Parameters;
 
 /// <summary>
-/// Eşitlik operatörlerinden seçimli liste oluşturur.
+/// Builds a selectable list of equality operators.
 /// </summary>
 public class EqualityListParameter : ListParameter
 {
     public bool Symbol { get; set; }
 
     /// <summary>
-    /// Eşitlik operatörlerinden seçimli liste oluşturur.
+    /// Builds a selectable list of equality operators.
     /// </summary>
     /// <param name="title"></param>
-    /// <param name="symbol">Etiket yerine sembol gösterilmesi</param>
-    /// <param name="includeOnly">Sadece gösterilmesini istediğiniz operatörler. Girilmezse hepsi gösterilir.</param>
+    /// <param name="symbol">Show symbols instead of labels.</param>
+    /// <param name="includeOnly">Operators to include. If empty, all are shown.</param>
     public EqualityListParameter(string title, bool symbol = true, params string[] includeOnly)
         : base(title)
     {

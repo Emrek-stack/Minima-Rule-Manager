@@ -4,7 +4,7 @@ using RuleEngine.Core.Rule.DesignTime.Statements;
 namespace RuleEngine.Core.Rule.DesignTime.Metadatas;
 
 /// <summary>
-/// 
+/// Logical OR operator metadata.
 /// </summary>
 public class OrOperatorMetadata : Metadata<OrOperatorStatement>
 {

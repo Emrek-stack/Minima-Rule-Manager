@@ -3,20 +3,20 @@ using System.Text.Json;
 namespace RuleEngine.Core.Rule.DesignTime.Parameters;
 
 /// <summary>
-/// Array tipindeki parametreler için kullanılır.
+/// Used for array-typed parameters.
 /// </summary>
 public class ArrayParameter : ParameterDefinition
 {
     /// <summary>
-    /// Her array'in bir tipi olmalı.
+    /// Each array must have a defined element type.
     /// </summary>
     public Type ArrayType { get; set; }
 
     /// <summary>
-    /// Array tipinde parametre oluşturur.
+    /// Creates an array-typed parameter.
     /// </summary>
     /// <param name="title"></param>
-    /// <param name="arrayType">Her array'in bir tipi olmalı</param>
+    /// <param name="arrayType">Each array must have a defined element type.</param>
     /// <param name="displayFormat"></param>
     public ArrayParameter(string title, Type arrayType, string displayFormat = "{0}")
         : base(title, displayFormat)

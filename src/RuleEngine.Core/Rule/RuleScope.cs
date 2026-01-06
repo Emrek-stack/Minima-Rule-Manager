@@ -4,7 +4,7 @@ using RuleEngine.Core.Models;
 namespace RuleEngine.Core.Rule;
 
 /// <summary>
-/// Kural yapılarına gönderilecek olan parametereleri setlemek için kullanılır.
+/// Used to set scoped rule inputs passed to rule executions.
 /// </summary>
 public sealed class RuleScope : IDisposable
 {
@@ -43,7 +43,7 @@ public sealed class RuleScope : IDisposable
     }
 
     /// <summary>
-    /// Mevcut kural scope'unu bitirir.
+    /// Ends the current rule scope.
     /// </summary>
     public void Dispose()
     {
@@ -51,7 +51,7 @@ public sealed class RuleScope : IDisposable
     }
 
     /// <summary>
-    /// Yeni bir kural scope'u oluşturur. Dispose olana kadar geçerlidir. using ile kullanınız.
+    /// Creates a new rule scope valid until disposed. Use with a using block.
     /// </summary>
     /// <returns></returns>
     public static RuleScope Begin()
@@ -60,7 +60,7 @@ public sealed class RuleScope : IDisposable
     }
 
     /// <summary>
-    /// Kurala gönderilecek olan parametreleri setler. Bu scope dispose olana kadar bu input parametreleri geçerlidir.
+    /// Sets inputs to be used within this scope until disposed.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="ruleInput"></param>
@@ -73,7 +73,7 @@ public sealed class RuleScope : IDisposable
     }
 
     /// <summary>
-    /// Mevcut scope'tan <typeparamref name="T"/> tipinde kural girişi döner.
+    /// Gets a scoped rule input of type <typeparamref name="T"/>.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>

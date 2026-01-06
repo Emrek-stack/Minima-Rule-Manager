@@ -1,12 +1,12 @@
 namespace RuleEngine.Core.Rule.DesignTime.Parameters;
 
 /// <summary>
-/// Evet, Hayır lı bir liste seçeneği
+/// Yes/No list option.
 /// </summary>
 public class BooleanListParameter : ListParameter
 {
     /// <summary>
-    /// Evet, Hayır listesi
+    /// Yes/No list.
     /// </summary>
     public BooleanListParameter(string title)
         : base(title)

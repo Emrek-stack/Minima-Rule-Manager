@@ -4,12 +4,12 @@ using RuleEngine.Core.Rule.DesignTime.Statements;
 namespace RuleEngine.Core.Rule.DesignTime.Metadatas;
 
 /// <summary>
-/// Parse edilememiş ve panelden eklenmemiş kod satırını ifade eder.
+/// Represents a rule line that could not be parsed or added via the UI.
 /// </summary>
 public sealed class IncorrectRuleMetadata : Metadata<IncorrectRuleStatement>
 {
     /// <summary>
-    /// Hatalı kural satırı oluşturur.
+    /// Creates incorrect rule metadata.
     /// </summary>
     public IncorrectRuleMetadata()
     {

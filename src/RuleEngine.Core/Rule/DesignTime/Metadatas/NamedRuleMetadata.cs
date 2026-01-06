@@ -8,12 +8,12 @@ using RuleEngine.Core.Rule.DesignTime.Statements;
 namespace RuleEngine.Core.Rule.DesignTime.Metadatas;
 
 /// <summary>
-/// Ekstra olarak tanımlı kuralları ifade eder.
+/// Represents named rules defined externally.
 /// </summary>
 public sealed class NamedRuleMetadata : Metadata<NamedRuleStatement>
 {
     /// <summary>
-    /// Yeni bir kural oluşturur.
+    /// Creates named rule metadata.
     /// </summary>
     /// <param name="title"></param>
     public NamedRuleMetadata(string title)
@@ -22,12 +22,12 @@ public sealed class NamedRuleMetadata : Metadata<NamedRuleStatement>
     }
 
     /// <summary>
-    /// Bu kuralın yazılış biçimi. parametreler için {N} gibi bir yapı kullanın.
+    /// Format for this rule. Use placeholders like {N} for parameters.
     /// </summary>
     public string ExpressionFormat { get; set; } = string.Empty;
 
     /// <summary>
-    /// 
+    /// Indicates whether this rule is a predicate.
     /// </summary>
     public bool IsPredicate { get; set; }
 
@@ -45,7 +45,7 @@ public sealed class NamedRuleMetadata : Metadata<NamedRuleStatement>
     }
 
     /// <summary>
-    /// Bu kurala ait parametre tanımlamaları.
+    /// Parameter definitions for this rule.
     /// </summary>
     public List<ParameterDefinition> ParameterDefinations { get; set; } = new List<ParameterDefinition>();
 

@@ -29,6 +29,16 @@ RuleEngine, C# expression tabanli predicate ve result kurallarini derler ve cali
 "Input.IsFirstPurchase == true"
 ```
 
+## Otel Kurallari Ornekleri
+
+```csharp
+// 18 yas alti konaklama
+"Input.GuestAge >= 18"
+
+// Tek erkek konaklama
+"!(Input.IsSingleGuest && Input.Gender == \"Male\")"
+```
+
 ## Best Practices
 
 - Kurallari kucuk ve test edilebilir parcalara bolun

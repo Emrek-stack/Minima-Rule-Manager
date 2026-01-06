@@ -1,7 +1,7 @@
 namespace RuleEngine.Core.Rule.DesignTime.Parameters;
 
 /// <summary>
-/// Integer, double, boolean veya sabit yazılı parametreler için kullanılır.
+/// Used for numeric or literal parameters (int/double/boolean).
 /// </summary>
 public class NumericParameter : ParameterDefinition
 {

@@ -3,7 +3,7 @@ using RuleEngine.Core.Models;
 namespace RuleEngine.Core.Rule;
 
 /// <summary>
-/// <see cref="RuleManager"/>'ın ihtiyaç duyduğu metodları sağlar. <see cref="RuleManager"/> tarafından singleton gibi çağrılır, yani aynı tipteki birden fazla provider instance'ı <see cref="RuleManager"/> için tektir.
+/// Provides methods required by <see cref="RuleManager"/>. RuleManager treats providers as singletons per type.
 /// </summary>
 /// <typeparam name="TRuleSet"></typeparam>
 /// <typeparam name="TInput"></typeparam>
@@ -13,21 +13,21 @@ public interface IRuleProvider<TRuleSet, TInput, TOutput> : IRuleProvider
     where TInput : RuleInputModel
 {
     /// <summary>
-    /// <paramref name="after"/> tarihinden sonraki kuralları derler ve <typeparamref name="TRuleSet"/> oluşturarak çıktı verir.
+    /// Compiles rules updated after <paramref name="after"/> and returns <typeparamref name="TRuleSet"/> instances.
     /// </summary>
     /// <param name="after"></param>
     /// <returns></returns>
     Task<IDictionary<string, TRuleSet>> GenerateRuleSetsAsync(DateTime after);
 
     /// <summary>
-    /// RuleSetlerin mevcut ve aktif olup olmadığını döner.
+    /// Returns whether the specified rule sets exist and are active.
     /// </summary>
-    /// <param name="keys">Kontrol edilecek olan keyler</param>
+    /// <param name="keys">Keys to check.</param>
     /// <returns></returns>
     Task<IDictionary<string, bool>> IsExistsAsync(params string[] keys);
 }
 
 /// <summary>
-/// Cache işlemleri için kullanılan base sınıftır. Bunun yerine <see cref="IRuleProvider{TRuleSet, TInput, TOutput}"/> arayüzünü kullanın.
+/// Marker interface for provider caching. Prefer <see cref="IRuleProvider{TRuleSet, TInput, TOutput}"/>.
 /// </summary>
 public interface IRuleProvider { }

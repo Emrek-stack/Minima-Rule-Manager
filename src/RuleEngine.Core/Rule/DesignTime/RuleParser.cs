@@ -6,12 +6,12 @@ using RuleEngine.Core.Rule.DesignTime.Statements;
 namespace RuleEngine.Core.Rule.DesignTime;
 
 /// <summary>
-/// String kuralı parse yapmak için kullanılır.
+/// Parses rule strings into statement trees.
 /// </summary>
 public static class RuleParser
 {
     /// <summary>
-    /// Kural string'de parametre olarak algılanan regexler.
+    /// Regex patterns recognized as parameters in rule strings.
     /// </summary>
     public static readonly Regex ParameterMatch = new Regex(
         @"new HashSet<object>\(new object\[\]\{(?:\\.|[^\}\\])*\}\)" +
@@ -150,9 +150,9 @@ public static class RuleParser
     }
 
     /// <summary>
-    /// Bir kural stringini parse yapar ve çıktı olarak bir parse ağacı oluşturur.
+    /// Parses a rule string and returns a statement tree.
     /// </summary>
-    /// <param name="str">Parse yapılacak string</param>
+    /// <param name="str">Rule string to parse.</param>
     /// <returns></returns>
     public static RuleTreeStatement Parse(string str)
     {

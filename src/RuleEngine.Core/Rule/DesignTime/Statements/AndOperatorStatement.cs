@@ -1,12 +1,12 @@
 namespace RuleEngine.Core.Rule.DesignTime.Statements;
 
 /// <summary>
-/// && operatörü
+/// && operator statement.
 /// </summary>
 public class AndOperatorStatement : Statement
 {
     /// <summary>
-    /// 
+    /// Creates an AND operator statement.
     /// </summary>
     public AndOperatorStatement()
     {

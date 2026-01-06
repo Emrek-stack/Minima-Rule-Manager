@@ -5,12 +5,12 @@ using RuleEngine.Core.Rule.DesignTime.Statements;
 namespace RuleEngine.Core.Rule.DesignTime.Metadatas;
 
 /// <summary>
-/// Kompleks kuralları ifade eder.
+/// Represents complex rules.
 /// </summary>
 public sealed class ComplexRuleMetadata : Metadata<ComplexRuleStatement>
 {
     /// <summary>
-    /// Kompleks kural gösterimi oluşturur.
+    /// Creates complex rule metadata.
     /// </summary>
     public ComplexRuleMetadata()
     {

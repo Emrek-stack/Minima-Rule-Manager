@@ -4,7 +4,7 @@ using RuleEngine.Core.Rule.DesignTime.Statements;
 namespace RuleEngine.Core.Rule.DesignTime.Metadatas;
 
 /// <summary>
-/// 
+/// Logical AND operator metadata.
 /// </summary>
 public class AndOperatorMetadata : Metadata<AndOperatorStatement>
 {

@@ -4,19 +4,19 @@ using RuleEngine.Core.Rule.DesignTime.Statements;
 namespace RuleEngine.Core.Rule.DesignTime;
 
 /// <summary>
-/// Parse edilmiş kuraldan string oluşturmak için kullanılır.
+/// Generates rule strings from parsed statements.
 /// </summary>
 public static class RuleGenerator
 {
     public const string StatementSeperator = " /**Statement_End**/\r\n";
 
     /// <summary>
-    /// Parse edilmiş bir kuralı, string kural haline dönüştürür.
+    /// Converts a parsed rule into a string rule.
     /// </summary>
     /// <param name="statement"></param>
     /// <param name="depth"></param>
     /// <param name="indent"></param>
-    /// <param name="namedRules">Statement içindeki isimli kurallar buradan verilmelidir.</param>
+    /// <param name="namedRules">Named rules referenced by the statement.</param>
     /// <returns></returns>
     public static string Generate(Statement statement,
         int depth = 0,

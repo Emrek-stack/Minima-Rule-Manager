@@ -5,11 +5,11 @@ using RuleEngine.Core.Models;
 namespace RuleEngine.Core.Rule;
 
 /// <summary>
-/// Kural setlerini provider bazında yönetir.
+/// Manages rule sets by provider.
 /// </summary>
 public static class RuleManager
 {
-    //Neden burada sadece Type'a göre tutuyoruz? çünkü providerWorker'lar instance'a göre değil, ruleSet'in tiplerine yani provider'ın tipine göre işlem yapar.
+    // We key by provider type because workers are tied to the provider type, not instance.
     private static readonly ConcurrentDictionary<Type, ProviderWorker> ProviderWorkers = new ConcurrentDictionary<Type, ProviderWorker>();
         
     private static ProviderWorker<TRuleSet, TInput, TOutput> GetProviderWorker<TRuleSet, TInput, TOutput>(IRuleProvider<TRuleSet, TInput, TOutput> provider)
@@ -33,14 +33,14 @@ public static class RuleManager
     }
 
     /// <summary>
-    /// Rule Provider'ın sağladığı kurallar içerisinde <paramref name="input"/> ile verilen bilgilere seçim kuralını çalıştırır ve uyanları çıktı verir.
+    /// Evaluates predicate rules using <paramref name="input"/> and returns matching rule sets.
     /// </summary>
     /// <typeparam name="TRuleSet"></typeparam>
     /// <typeparam name="TInput"></typeparam>
     /// <typeparam name="TOutput"></typeparam>
     /// <param name="provider"></param>
-    /// <param name="input">Seçim kurallarına gönderilecek olan bilgiler.</param>
-    /// <returns>Kural kodu ve <typeparamref name="TRuleSet"/> den oluşan dictionary</returns>
+    /// <param name="input">Input passed to predicate rules.</param>
+    /// <returns>Dictionary of rule code to <typeparamref name="TRuleSet"/>.</returns>
     public static IDictionary<string, TRuleSet> PredicateRuleSets<TRuleSet, TInput, TOutput>(
         this IRuleProvider<TRuleSet, TInput, TOutput> provider, TInput input)
         where TRuleSet : RuleSet<TInput, TOutput>
@@ -48,19 +48,19 @@ public static class RuleManager
     {
         var providerWorker = GetProviderWorker(provider);
 
-        //todo: sayı kontrol edilip eğer belli bir limitin yukarısında ise parallel foreach kullan.
+        // TODO: consider parallel execution when the rule count exceeds a threshold.
         return providerWorker.RuleSets.Where(rs => rs.Value.Predicate(input))
             .ToDictionary(kv => kv.Key, kv => kv.Value);
     }
 
     /// <summary>
-    /// Rule Provider'ın sağladığı tüm kural setlerini döner.
+    /// Returns all rule sets provided by the provider.
     /// </summary>
     /// <typeparam name="TRuleSet"></typeparam>
     /// <typeparam name="TInput"></typeparam>
     /// <typeparam name="TOutput"></typeparam>
     /// <param name="provider"></param>
-    /// <returns>Kural kodu ve <typeparamref name="TRuleSet"/> den oluşan dictionary</returns>
+    /// <returns>Dictionary of rule code to <typeparamref name="TRuleSet"/>.</returns>
     public static IDictionary<string, TRuleSet> GetRuleSets<TRuleSet, TInput, TOutput>(
         this IRuleProvider<TRuleSet, TInput, TOutput> provider)
         where TRuleSet : RuleSet<TInput, TOutput>
@@ -72,7 +72,7 @@ public static class RuleManager
     }
 
     /// <summary>
-    /// Rule Provider'ın sağladığı kurallar içerisinde <paramref name="input"/> ile verilen bilgilere seçim kuralını çalıştırır ve uyanları çıktı verir.
+    /// Executes rule sets matching the predicate for <paramref name="input"/>.
     /// </summary>
     /// <typeparam name="TRuleSet"></typeparam>
     /// <typeparam name="TInput"></typeparam>
@@ -90,7 +90,7 @@ public static class RuleManager
     }
 
     /// <summary>
-    /// Rule Provider'ın sağladığı kurallar içerisinde <paramref name="input"/> ile verilen bilgilere seçim kuralını çalıştırır ve uyanları çıktı verir.
+    /// Executes rule sets matching the predicate for <paramref name="input"/>.
     /// </summary>
     /// <typeparam name="TRuleSet"></typeparam>
     /// <typeparam name="TInput"></typeparam>
@@ -108,7 +108,7 @@ public static class RuleManager
     }
 
     /// <summary>
-    /// Rule Provider'ın sağladığı kurallar içerisinde <paramref name="input"/> ile verilen bilgilere seçim kuralını çalıştırır ve uyanları çıktı verir.
+    /// Executes multi-result rule sets matching the predicate for <paramref name="input"/>.
     /// </summary>
     /// <typeparam name="TRuleSet"></typeparam>
     /// <typeparam name="TInput"></typeparam>
@@ -127,7 +127,7 @@ public static class RuleManager
     }
 
     /// <summary>
-    /// Rule Provider'ın sağladığı kurallar içerisinde <paramref name="input"/> ile verilen bilgilere seçim kuralını çalıştırır ve uyanları çıktı verir.
+    /// Executes multi-result rule sets matching the predicate for <paramref name="input"/>.
     /// </summary>
     /// <typeparam name="TRuleSet"></typeparam>
     /// <typeparam name="TInput"></typeparam>
@@ -186,7 +186,7 @@ public static class RuleManager
 
     private static void Worker()
     {
-        //async metodları kullanabilmek için oluşturduk.
+        // Run on background thread to allow async processing.
         Task.Run(async () =>
             {
                 while (!CancelToken.IsCancellationRequested)
