@@ -35,6 +35,8 @@ RuleEngine paket ailesi birden fazla NuGet paketi olarak yayinlanir. Her paket .
 - SQLite ile kalicilik ve audit: `Minima.RuleEngine.Sqlite`
 - Kampanya kurallari: `Minima.CampaignEngine.Core`
 
+Tum ozellikler: `features.html`
+
 ## Yukseltme Notlari
 
 - Yeni MINOR surumden once test ortaminda migration ve audit tablolarini dogrulayin.

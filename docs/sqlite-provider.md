@@ -7,6 +7,16 @@ layout: default
 
 RuleEngine.Sqlite, RuleEngine.Core icin kalicilik ve audit logging saglar. EF Core ile migration ve seeding destekler.
 
+## Temel Ozellikler
+
+- EF Core tabanli kalicilik
+- Versioning ve active version kontrolu
+- Rule parameter serilestirme (System.Text.Json)
+- Audit logging (input/output, sure, hata)
+- Migration ve seeding akisi
+
+Tum ozellikler: `features.html`
+
 ## Kurulum
 
 ```bash

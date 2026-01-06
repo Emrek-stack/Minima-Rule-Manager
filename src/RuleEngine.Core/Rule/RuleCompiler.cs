@@ -149,7 +149,7 @@ public class RuleCompiler<TInput, TReturn>
             {
                 extraNamespaces = extraTypes.Select(t => t.Namespace).OfType<string>().ToList();
                 extraReferences = extraTypes.Select(t => t.Assembly).Distinct().ToList();
-                extraRuleHeader = "\r\n///Added for only this compilation:\r\n///using " + string.Join(";\r\n///using ", _namespaces) + ";";
+                extraRuleHeader = "\r\n///Added for only this compilation:\r\n///using " + string.Join(";\r\n///using ", extraNamespaces) + ";";
             }
 
                 ruleBodyString = MakeRuleBody(ruleStrings, extraRuleHeader);

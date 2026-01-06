@@ -19,9 +19,15 @@ public class CampaignManager<TCampaignRuleInput, TCampaignRuleOutput>
 
     public CampaignManager(int moduleId, IServiceProvider serviceProvider, ILogger<CampaignManager<TCampaignRuleInput, TCampaignRuleOutput>> logger, params Type[] extraType)
     {
+        if (serviceProvider == null)
+            throw new ArgumentNullException(nameof(serviceProvider));
+        if (logger == null)
+            throw new ArgumentNullException(nameof(logger));
+
         _moduleId = moduleId;
         _logger = logger;
-        _ruleProvider = new CampaignRuleProvider(_moduleId, serviceProvider, extraType);
+        var extraTypes = extraType?.Where(t => t != null).ToArray() ?? Array.Empty<Type>();
+        _ruleProvider = new CampaignRuleProvider(_moduleId, serviceProvider, extraTypes);
         _ruleProvider.WaitInitialization();
     }
 
@@ -36,8 +42,8 @@ public class CampaignManager<TCampaignRuleInput, TCampaignRuleOutput>
         public CampaignRuleProvider(int moduleId, IServiceProvider serviceProvider, params Type[] extraType)
         {
             _moduleId = moduleId;
-            _extraType = extraType;
-            _serviceProvider = serviceProvider;
+            _extraType = extraType ?? Array.Empty<Type>();
+            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
             _usageRuleCompiler = new RuleCompiler<TCampaignRuleInput, bool>(_extraType);
             _resultRuleCompiler = new RuleCompiler<TCampaignRuleInput, TCampaignRuleOutput>(_extraType);
         }
@@ -83,7 +89,7 @@ public class CampaignManager<TCampaignRuleInput, TCampaignRuleOutput>
                     ruleSet.PromotionCode = ruleEntity.PromotionCode;
                     ruleSet.Id = ruleEntity.Id;
                     ruleSet.CreateDate = ruleEntity.CreateDate;
-                    result.Add(ruleEntity.Code, ruleSet);
+                    result[ruleEntity.Code] = ruleSet;
                 }
                 catch (Exception e)
                 {
@@ -130,11 +136,17 @@ public class CampaignManager<TCampaignRuleInput, TCampaignRuleOutput>
 
     public IEnumerable<TCampaignRuleOutput> GetCampaign(TCampaignRuleInput input)
     {
+        if (input == null)
+            throw new ArgumentNullException(nameof(input));
+
         return GetCampaign(input, out _);
     }
 
     public IEnumerable<TCampaignRuleOutput> GetCampaign(TCampaignRuleInput input, out List<CampaignRuleSet> ruleSets)
     {
+        if (input == null)
+            throw new ArgumentNullException(nameof(input));
+
         try
         {
             var predicates = RuleManager.PredicateRuleSets(_ruleProvider, input);
@@ -179,79 +191,95 @@ public class CampaignManager<TCampaignRuleInput, TCampaignRuleOutput>
 
     public IDictionary<string, ITravelProduct> UseCampaign(string productKey, string campaignCode, IDictionary<string, ITravelProduct> productsInTransaction)
     {
-        foreach (var product in productsInTransaction.Values)
-        {
-            var campaignInfo = product.CampaignInformations.Values
-                .FirstOrDefault(ci => ci.CampaignTypes == CampaignTypes.ProductGiftCampaign && ci.Code == campaignCode);
-            if (campaignInfo != null)
-            {
-                if (campaignInfo.Used)
-                {
-                    product.TotalPrice += campaignInfo.TotalDiscount;
-                }
-                product.TotalPrice -= campaignInfo.TotalDiscount;
-                campaignInfo.Used = true;
-            }
-        }
+        if (string.IsNullOrWhiteSpace(productKey))
+            throw new ArgumentException("Product key cannot be null or empty.", nameof(productKey));
+        if (string.IsNullOrWhiteSpace(campaignCode))
+            throw new ArgumentException("Campaign code cannot be null or empty.", nameof(campaignCode));
+        if (productsInTransaction == null)
+            throw new ArgumentNullException(nameof(productsInTransaction));
+
+        if (!productsInTransaction.TryGetValue(productKey, out var product))
+            return productsInTransaction;
+
+        if (product.CampaignInformations == null)
+            return productsInTransaction;
+
+        var campaignInfo = product.CampaignInformations.Values
+            .FirstOrDefault(ci => ci.CampaignTypes == CampaignTypes.ProductGiftCampaign && ci.Code == campaignCode);
+        if (campaignInfo == null || campaignInfo.Used)
+            return productsInTransaction;
+
+        product.TotalPrice -= campaignInfo.TotalDiscount;
+        campaignInfo.Used = true;
+
         return productsInTransaction;
     }
 
     public List<AvailableCampaign> GetAvailableCampaigns(string productKey, IDictionary<string, ITravelProduct> productsInTransaction, TCampaignRuleInput input)
     {
+        if (string.IsNullOrWhiteSpace(productKey))
+            throw new ArgumentException("Product key cannot be null or empty.", nameof(productKey));
+        if (productsInTransaction == null)
+            throw new ArgumentNullException(nameof(productsInTransaction));
+        if (input == null)
+            throw new ArgumentNullException(nameof(input));
+
         var availableCampaigns = new List<AvailableCampaign>();
         var repo = _ruleProvider.ServiceProvider.GetRequiredService<ICampaignRepository>();
 
         var ruleSetOrdered = RuleManager.GetRuleSets(_ruleProvider).Values.OrderByDescending(r => r.Priority);
 
-        _ = ruleSetOrdered
-            .Where(rs => rs.CampaignTypes == (int)CampaignTypes.ProductGiftCampaign && rs.UsageRule != null && rs.UsageRule.Invoke(input))
-            .Select(ruleSet =>
+        foreach (var ruleSet in ruleSetOrdered)
+        {
+            if (ruleSet.CampaignTypes != (int)CampaignTypes.ProductGiftCampaign)
+                continue;
+            if (ruleSet.UsageRule == null || !ruleSet.UsageRule.Invoke(input))
+                continue;
+
+            foreach (var product in productsInTransaction.Values)
             {
-                foreach (var product in productsInTransaction.Values)
+                if (product.CampaignInformations == null)
+                    continue;
+
+                var campaignResult = ruleSet.ResultRule.Invoke(input);
+                var existingInfo = product.CampaignInformations.Values.FirstOrDefault(ci => ci.Code == ruleSet.Code);
+                if (existingInfo == null)
+                    continue;
+
+                existingInfo.TotalDiscount = campaignResult.TotalDiscount;
+
+                if (ruleSet.Quota != 0)
                 {
-                    if (product.CampaignInformations == null)
-                        continue;
-
-                    var campaignResult = ruleSet.ResultRule.Invoke(input);
-                    var existingInfo = product.CampaignInformations.Values.FirstOrDefault(ci => ci.Code == ruleSet.Code);
-                    if (existingInfo == null)
-                        continue;
-
-                    existingInfo.TotalDiscount = campaignResult.TotalDiscount;
-                    if (ruleSet.Quota != 0)
+                    var quotaState = repo.CheckCampaignQuota(ruleSet.Quota ?? 0, ruleSet.Id);
+                    if (!quotaState)
                     {
-                        var quotaState = repo.CheckCampaignQuota(ruleSet.Quota ?? 0, ruleSet.Id);
-                        if (!quotaState)
-                        {
-                            availableCampaigns.Add(new AvailableCampaign());
-                        }
-                        else
-                        {
-                            availableCampaigns.Add(BuildAvailableCampaign(productKey, product.Key, ruleSet, campaignResult));
-                        }
+                        availableCampaigns.Add(new AvailableCampaign());
+                        continue;
                     }
-                    else
-                    {
-                        availableCampaigns.Add(BuildAvailableCampaign(productKey, product.Key, ruleSet, campaignResult));
-                    }
-
-                    return availableCampaigns;
                 }
 
-                return null;
-            })
-            .Where(v => v != null)
-            .SelectMany(x => x!)
-            .ToList();
+                availableCampaigns.Add(BuildAvailableCampaign(productKey, product.Key, ruleSet, campaignResult));
+            }
+        }
 
         return availableCampaigns;
     }
 
     public void DeleteCampaign(string campaignCode, IDictionary<string, ITravelProduct> productsInTransaction)
     {
+        if (string.IsNullOrWhiteSpace(campaignCode))
+            throw new ArgumentException("Campaign code cannot be null or empty.", nameof(campaignCode));
+        if (productsInTransaction == null)
+            throw new ArgumentNullException(nameof(productsInTransaction));
+
         foreach (var product in productsInTransaction.Values)
         {
-            var basketCampaigns = product.CampaignInformations.Values.Where(ci => ci.CampaignTypes == CampaignTypes.ProductGiftCampaign).ToList();
+            if (product.CampaignInformations == null)
+                continue;
+
+            var basketCampaigns = product.CampaignInformations.Values
+                .Where(ci => ci.CampaignTypes == CampaignTypes.ProductGiftCampaign && ci.Code == campaignCode)
+                .ToList();
             foreach (var basketCampaign in basketCampaigns)
             {
                 if (basketCampaign.Used)

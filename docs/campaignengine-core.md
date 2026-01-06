@@ -7,6 +7,17 @@ layout: default
 
 CampaignEngine.Core, RuleEngine.Core uzerine insa edilmis kampanya yonetim katmanidir. Kampanyalari oncelik, kota, secim (predicate), sonuc (result) ve kullanim (usage) kurallariyla calistirir.
 
+## Temel Ozellikler
+
+- Kampanya secimi ve onceliklendirme
+- Discount, ProductGift, GiftCoupon tipleri
+- Usage ve quota kontrolleri
+- Available campaign hesaplama
+- UseCampaign / DeleteCampaign sepet akisi
+- Price modeli (ISO 4217 uyumlu)
+
+Tum ozellikler: `features.html`
+
 ## Kurulum
 
 ```bash

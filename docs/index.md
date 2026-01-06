@@ -43,6 +43,7 @@ Daha fazlasi: `getting-started.html`
 ## Dokumantasyon Haritasi
 
 - Baslangic ve kurulum: `getting-started.html`
+- Feature matrix: `features.html`
 - Paketler ve surumleme: `packages.html`
 - Mimari: `architecture.html`
 - RuleEngine.Core: `ruleengine-core.html`

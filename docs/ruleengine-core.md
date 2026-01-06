@@ -15,6 +15,10 @@ RuleEngine.Core, Roslyn tabanli C# expression derleme, versioning, audit logging
 - RuleManager / RuleProvider akisi
 - Design-time metadata katalogu
 - DEBUG_RULES ile PDB olusturma
+- MultiResultRuleSet ile coklu sonuc secimi
+- Syntax dogrulama (RuleSyntaxError)
+
+Tum ozellikler: `features.html`
 
 ## Kurulum
 
