@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+using Microsoft.Extensions.Caching.Memory;
 using RuleEngine.Core.Abstractions;
 using RuleEngine.Core.Models;
 using RuleEngine.Core.Rule;
@@ -8,11 +8,34 @@ namespace RuleEngineDemoVue.Server.Services;
 
 public sealed class DemoRuleEvaluator : IRuleEvaluator
 {
-    private readonly ConcurrentDictionary<string, (CompiledRule<OrderRuleInput, bool> Predicate, CompiledRule<OrderRuleInput, object> Result)> _cache
-        = new ConcurrentDictionary<string, (CompiledRule<OrderRuleInput, bool>, CompiledRule<OrderRuleInput, object>)>();
+    private sealed class CompiledRules
+    {
+        public CompiledRules(
+            CompiledRule<OrderRuleInput, bool> predicate,
+            CompiledRule<OrderRuleInput, object> result)
+        {
+            Predicate = predicate;
+            Result = result;
+        }
+
+        public CompiledRule<OrderRuleInput, bool> Predicate { get; }
+        public CompiledRule<OrderRuleInput, object> Result { get; }
+    }
+
+    private static readonly MemoryCacheEntryOptions CacheOptions = new MemoryCacheEntryOptions
+    {
+        SlidingExpiration = TimeSpan.FromMinutes(30)
+    };
+
+    private readonly IMemoryCache _cache;
 
     private readonly RuleCompiler<OrderRuleInput, bool> _predicateCompiler = new RuleCompiler<OrderRuleInput, bool>();
     private readonly RuleCompiler<OrderRuleInput, object> _resultCompiler = new RuleCompiler<OrderRuleInput, object>();
+
+    public DemoRuleEvaluator(IMemoryCache cache)
+    {
+        _cache = cache;
+    }
 
     public async Task<RuleExecutionResult> EvaluateAsync(RuleDefinition rule, object input, CancellationToken cancellationToken = default)
     {
@@ -52,17 +75,17 @@ public sealed class DemoRuleEvaluator : IRuleEvaluator
         return Task.FromResult(errors.Count == 0 ? ValidationResult.Success() : ValidationResult.Failure(errors.ToArray()));
     }
 
-    private async Task<(CompiledRule<OrderRuleInput, bool> Predicate, CompiledRule<OrderRuleInput, object> Result)> GetCompiledAsync(RuleDefinition rule)
+    private async Task<CompiledRules> GetCompiledAsync(RuleDefinition rule)
     {
         var cacheKey = $"{rule.Id}:{rule.Version}";
-        if (_cache.TryGetValue(cacheKey, out var compiled))
+        if (_cache.TryGetValue(cacheKey, out CompiledRules? compiled) && compiled != null)
             return compiled;
 
         var predicate = await _predicateCompiler.CompileAsync(rule.Name + ".Predicate", rule.Content.PredicateExpression);
         var result = await _resultCompiler.CompileAsync(rule.Name + ".Result", rule.Content.ResultExpression);
 
-        compiled = (predicate, result);
-        _cache[cacheKey] = compiled;
+        compiled = new CompiledRules(predicate, result);
+        _cache.Set(cacheKey, compiled, CacheOptions);
         return compiled;
     }
 }
