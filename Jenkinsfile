@@ -89,6 +89,27 @@ pipeline {
       }
     }
 
+    stage('PackVue') {
+      steps {
+        container('node-worker') {
+            sh '''
+              rm -rf artifacts
+              mkdir -p artifacts
+
+              VERSION_ARG=""
+              if [ -n "${PACKAGE_VERSION}" ]; then
+                VERSION_ARG="-p:PackageVersion=${PACKAGE_VERSION}"
+              fi
+
+              dotnet pack demo/RuleEngineDemoVue/RuleEngineDemoVue.Server/RuleEngineDemoVue.Server.csproj \
+                -c Release --no-build -o artifacts ${VERSION_ARG} \
+                -p:IsPackable=true \
+                -p:BuildProjectReferences=false
+            '''
+        }
+      }
+    }
+
     stage('Publish to Nexus') {
       steps {
         container('dotnet-sdk') {
