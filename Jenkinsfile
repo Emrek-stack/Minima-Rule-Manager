@@ -47,22 +47,6 @@ pipeline {
       }
     }
 
-    stage('Vue Build') {
-      steps {
-        container('node-worker') {
-          // Vue projesinin package.json dosyasının olduğu klasöre git
-          dir('demo/RuleEngineDemoVue/RuleEngineDemoVue.Server') { 
-            
-            echo 'NPM paketleri yükleniyor...'
-            sh 'npm install'
-                                    
-            // Opsiyonel: Eğer build dosyalarını bir yere kopyalaman gerekiyorsa
-            // sh 'cp -r dist/* ../wwwroot/' 
-          }
-        }
-      }
-    }
-
 
     stage('Pack') {
       steps {
@@ -79,27 +63,6 @@ pipeline {
               dotnet pack src/RuleEngine.Core/RuleEngine.Core.csproj -c Release --no-build -o artifacts ${VERSION_ARG}
               dotnet pack src/RuleEngine.Sqlite/RuleEngine.Sqlite.csproj -c Release --no-build -o artifacts ${VERSION_ARG}
               dotnet pack src/CampaignEngine.Core/CampaignEngine.Core.csproj -c Release --no-build -o artifacts ${VERSION_ARG}
-            '''
-        }
-      }
-    }
-
-    stage('PackVue') {
-      steps {
-        container('node-worker') {
-            sh '''
-              rm -rf artifacts
-              mkdir -p artifacts
-
-              VERSION_ARG=""
-              if [ -n "${PACKAGE_VERSION}" ]; then
-                VERSION_ARG="-p:PackageVersion=${PACKAGE_VERSION}"
-              fi
-
-              dotnet pack demo/RuleEngineDemoVue/RuleEngineDemoVue.Server/RuleEngineDemoVue.Server.csproj \
-                -c Release --no-build -o artifacts ${VERSION_ARG} \
-                -p:IsPackable=true \
-                -p:BuildProjectReferences=false
             '''
         }
       }
