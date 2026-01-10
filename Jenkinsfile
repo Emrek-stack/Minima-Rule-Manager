@@ -7,8 +7,8 @@ pipeline {
         spec:
           containers:
           - name: dotnet-sdk
-            image: "mcr.microsoft.com/dotnet/sdk:10.0"  # Projeniz 6.0 veya 7.0 ise ona göre değiştirin
-            command: ['sleep']
+            image: "mcr.microsoft.com/dotnet/sdk:9.0"
+            command: ['sh', '-c', 'apt-get update && apt-get install -y curl && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && apt-get install -y nodejs && sleep 99d']
             args: ['99d']
           - name: node-worker
             image: node:20-alpine  # Vue için node imajı
