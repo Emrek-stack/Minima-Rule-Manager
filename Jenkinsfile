@@ -7,7 +7,7 @@ pipeline {
         spec:
           containers:
           - name: dotnet-sdk
-            image: mcr.microsoft.com/dotnet/sdk:8.0  # Projeniz 6.0 veya 7.0 ise ona göre değiştirin
+            image: mcr.microsoft.com/dotnet/sdk:9.0  # Projeniz 6.0 veya 7.0 ise ona göre değiştirin
             command: ['sleep']
             args: ['99d']
       '''
