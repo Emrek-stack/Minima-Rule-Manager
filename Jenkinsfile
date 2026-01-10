@@ -10,6 +10,10 @@ pipeline {
             image: "mcr.microsoft.com/dotnet/sdk:10.0"  # Projeniz 6.0 veya 7.0 ise ona göre değiştirin
             command: ['sleep']
             args: ['99d']
+          - name: node-worker
+            image: node:20-alpine  # Vue için node imajı
+            command: ['sleep']
+            args: ['99d']            
       '''
     }
   }
@@ -42,6 +46,23 @@ pipeline {
         }
       }
     }
+
+    stage('Vue Build') {
+      steps {
+        container('node-worker') {
+          // Vue projesinin package.json dosyasının olduğu klasöre git
+          dir('demo/RuleEngineDemoVue/RuleEngineDemoVue.Server') { 
+            
+            echo 'NPM paketleri yükleniyor...'
+            sh 'npm install'
+                                    
+            // Opsiyonel: Eğer build dosyalarını bir yere kopyalaman gerekiyorsa
+            // sh 'cp -r dist/* ../wwwroot/' 
+          }
+        }
+      }
+    }
+
 
     stage('Pack') {
       steps {
