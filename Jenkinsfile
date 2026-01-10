@@ -1,10 +1,6 @@
 pipeline {
   agent any
 
-  options {
-    timestamps()
-  }
-
   parameters {
     string(name: 'PACKAGE_VERSION', defaultValue: '', description: 'Optional override for NuGet package version (e.g., 1.2.3).')
     string(name: 'NEXUS_NUGET_SOURCE', defaultValue: 'https://nexus.example.com/repository/nuget-hosted/index.json', description: 'Nexus NuGet feed URL.')
