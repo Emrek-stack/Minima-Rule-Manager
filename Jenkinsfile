@@ -79,11 +79,6 @@ pipeline {
               dotnet pack src/RuleEngine.Core/RuleEngine.Core.csproj -c Release --no-build -o artifacts ${VERSION_ARG}
               dotnet pack src/RuleEngine.Sqlite/RuleEngine.Sqlite.csproj -c Release --no-build -o artifacts ${VERSION_ARG}
               dotnet pack src/CampaignEngine.Core/CampaignEngine.Core.csproj -c Release --no-build -o artifacts ${VERSION_ARG}
-
-              dotnet pack demo/RuleEngineDemoVue/RuleEngineDemoVue.Server/RuleEngineDemoVue.Server.csproj \
-                -c Release --no-build -o artifacts ${VERSION_ARG} \
-                -p:IsPackable=true \
-                -p:BuildProjectReferences=false
             '''
         }
       }
