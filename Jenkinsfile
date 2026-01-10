@@ -68,6 +68,29 @@ pipeline {
       }
     }
 
+    stage('Dotnet Publish (App)') {
+          steps {
+            container('dotnet-sdk') {
+              echo 'Uygulama yayınlanmaya hazırlanıyor (Server + Vue)...'
+              // Bu komut hem server'ı derler hem de client buildlerini içine alır
+              sh 'dotnet publish demo/RuleEngineDemoVue/RuleEngineDemoVue.Server/RuleEngineDemoVue.Server.csproj -c Release -o ./publish_output'
+            }
+          }
+        }
+
+    stage('NuGet Pack (Libraries)') {
+      steps {
+        container('dotnet-sdk') {
+          sh 'rm -rf artifacts && mkdir -p artifacts'
+          
+          // Sadece kütüphane olan projeleri paketliyoruz
+          sh 'dotnet pack src/RuleEngine.Core/RuleEngine.Core.csproj -c Release -o artifacts'
+          sh 'dotnet pack src/RuleEngine.Sqlite/RuleEngine.Sqlite.csproj -c Release -o artifacts'
+          sh 'dotnet pack src/CampaignEngine.Core/CampaignEngine.Core.csproj -c Release -o artifacts'
+        }
+      }
+    }    
+
     stage('Publish to Nexus') {
       steps {
         container('dotnet-sdk') {
