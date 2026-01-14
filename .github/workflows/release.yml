@@ -2,157 +2,114 @@ name: Release
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main
 
-env:
-  DOTNET_VERSION: '8.0.x'
-  NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+permissions:
+  contents: write
 
 jobs:
-  create-release:
+  release:
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-latest
-    outputs:
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
-      version: ${{ steps.get_version.outputs.version }}
-    
+    env:
+      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Get version from tag
-      id: get_version
-      run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-      
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ steps.get_version.outputs.version }}
-        body: |
-          ## What's Changed
-          
-          ### 🚀 New Features
-          - Complete RuleEngine implementation
-          - SQLite persistence layer
-          - ASP.NET Core MVC sample application
-          - KnockoutJS rule builder UI
-          
-          ### 📦 Packages
-          - **RuleEngine.Core** - Core rule engine functionality
-          - **RuleEngine.Sqlite** - SQLite persistence layer
-          
-          ### 🛠️ Technical Details
-          - .NET 8.0 support
-          - Roslyn-based C# compilation
-          - Entity Framework Core integration
-          - Comprehensive test coverage
-          
-          ### 📚 Documentation
-          - Complete README with examples
-          - API documentation
-          - Contributing guidelines
-          
-          ## Installation
-          
-          ```bash
-          dotnet add package RuleEngine.Core
-          dotnet add package RuleEngine.Sqlite
-          ```
-          
-          ## Quick Start
-          
-          ```csharp
-          using RuleEngine.Core.Rule;
-          
-          var compiler = new RuleCompiler<MyInput, bool>();
-          var rule = await compiler.CompileAsync("my-rule", "Input.Value > 10");
-          var result = rule.Invoke(new MyInput { Value = 15 });
-          ```
-          
-          Full documentation: [README.md](https://github.com/${{ github.repository }}/blob/main/README.md)
-        draft: false
-        prerelease: false
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-  build-and-package:
-    needs: create-release
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
-        
-    - name: Restore dependencies
-      run: dotnet restore
-      
-    - name: Build solution
-      run: dotnet build --no-restore --configuration Release
-      
-    - name: Run tests
-      run: dotnet test --no-build --configuration Release --verbosity normal
-      
-    - name: Update package version
-      run: |
-        VERSION=${{ needs.create-release.outputs.version }}
-        echo "Updating version to: $VERSION"
-        find src -name "*.csproj" -exec sed -i "s/<Version>.*<\/Version>/<Version>$VERSION<\/Version>/g" {} \;
-        
-    - name: Pack NuGet packages
-      run: dotnet pack --no-restore --configuration Release --output ./artifacts
-      
-    - name: Validate packages
-      run: |
-        echo "Validating NuGet packages..."
-        for package in ./artifacts/*.nupkg; do
-          echo "Validating: $package"
-          dotnet nuget push "$package" --api-key ${{ env.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --dry-run
-        done
-      
-    - name: Publish to NuGet
-      run: |
-        echo "Publishing packages to NuGet..."
-        for package in ./artifacts/*.nupkg; do
-          echo "Publishing: $package"
-          dotnet nuget push "$package" --api-key ${{ env.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
-        done
-      
-    - name: Upload packages to release
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ needs.create-release.outputs.upload_url }}
-        asset_path: ./artifacts/
-        asset_name: nuget-packages
-        asset_content_type: application/zip
+      - name: Setup .NET SDKs
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            10.0.x
+            9.0.x
+            8.0.x
 
-  notify:
-    needs: [create-release, build-and-package]
-    runs-on: ubuntu-latest
-    if: always()
-    
-    steps:
-    - name: Notify success
-      if: needs.build-and-package.result == 'success'
-      run: |
-        echo "✅ Release ${{ needs.create-release.outputs.version }} published successfully!"
-        echo "📦 NuGet packages available at: https://www.nuget.org/packages/RuleEngine.Core/"
-        echo "📦 NuGet packages available at: https://www.nuget.org/packages/RuleEngine.Sqlite/"
-        
-    - name: Notify failure
-      if: needs.build-and-package.result == 'failure'
-      run: |
-        echo "❌ Release ${{ needs.create-release.outputs.version }} failed!"
-        exit 1
+      - name: Bump version
+        id: version
+        shell: bash
+        run: |
+          set -e
+          PROJECTS=(
+            "src/RuleEngine.Core/RuleEngine.Core.csproj"
+            "src/RuleEngine.Sqlite/RuleEngine.Sqlite.csproj"
+            "src/CampaignEngine.Core/CampaignEngine.Core.csproj"
+          )
 
+          CURRENT_VERSION=$(grep -o '<Version>[^<]*</Version>' "${PROJECTS[0]}" | sed 's/<Version>\(.*\)<\/Version>/\1/')
+          IFS='.' read -ra VERSION_PARTS <<< "$CURRENT_VERSION"
+          NEW_VERSION="${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.$((VERSION_PARTS[2] + 1))"
 
+          for PROJECT in "${PROJECTS[@]}"; do
+            sed -i "s|<Version>$CURRENT_VERSION</Version>|<Version>$NEW_VERSION</Version>|g" "$PROJECT"
+          done
 
+          echo "new_version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
 
+      - name: Build and pack
+        shell: bash
+        run: |
+          set -e
+          mkdir -p artifacts
+          PROJECTS=(
+            "src/RuleEngine.Core/RuleEngine.Core.csproj"
+            "src/RuleEngine.Sqlite/RuleEngine.Sqlite.csproj"
+            "src/CampaignEngine.Core/CampaignEngine.Core.csproj"
+          )
+
+          for PROJECT in "${PROJECTS[@]}"; do
+            dotnet build "$PROJECT" --configuration Release
+            dotnet pack "$PROJECT" --configuration Release --no-build --output artifacts
+          done
+
+      - name: Commit version bump
+        shell: bash
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add src/RuleEngine.Core/RuleEngine.Core.csproj
+          git add src/RuleEngine.Sqlite/RuleEngine.Sqlite.csproj
+          git add src/CampaignEngine.Core/CampaignEngine.Core.csproj
+          git commit -m "chore: bump version to v${{ steps.version.outputs.new_version }} [skip ci]"
+          git push origin HEAD:main
+
+      - name: Tag and release
+        shell: bash
+        run: |
+          set -e
+          VERSION="${{ steps.version.outputs.new_version }}"
+
+          cat > release_notes.md <<EOF
+          ## Release v${VERSION}
+
+          ### Packages
+          - Minima.RuleEngine.Core v${VERSION}
+          - Minima.RuleEngine.Sqlite v${VERSION}
+          - Minima.CampaignEngine.Core v${VERSION}
+
+          ### Installation
+          \`\`\`bash
+          dotnet add package Minima.RuleEngine.Core --version ${VERSION}
+          dotnet add package Minima.RuleEngine.Sqlite --version ${VERSION}
+          dotnet add package Minima.CampaignEngine.Core --version ${VERSION}
+          \`\`\`
+          EOF
+
+          git tag "v${VERSION}"
+          git push origin "v${VERSION}"
+          gh release create "v${VERSION}" --title "Release v${VERSION}" --notes-file release_notes.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push to NuGet
+        if: env.NUGET_API_KEY != ''
+        shell: bash
+        run: |
+          set -e
+          find artifacts -name "*.nupkg" -not -name "*symbols*" | while read -r package; do
+            dotnet nuget push "$package" --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          done
