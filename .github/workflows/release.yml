@@ -28,7 +28,7 @@ jobs:
             9.0.x
             8.0.x
 
-      - name: Bump version
+      - name: Bump version 
         id: version
         shell: bash
         run: |
