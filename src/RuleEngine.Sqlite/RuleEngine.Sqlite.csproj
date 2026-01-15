@@ -49,7 +49,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PackageId>Minima.RuleEngine.Sqlite</PackageId>
-    <Version>1.1.13</Version>
+    <Version>1.1.14</Version>
     <Authors>Emre Karahan</Authors>
     <Description>SQLite persistence provider for RuleEngine with Entity Framework Core integration for .NET 8/9/10.</Description>
     <PackageProjectUrl>https://github.com/Emrek-stack/Minima-Rule-Manager</PackageProjectUrl>
