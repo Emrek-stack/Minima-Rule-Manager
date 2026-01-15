@@ -1,8 +1,3 @@
-# ASP.NET Core (.NET Framework)
-# Build and test ASP.NET Core projects targeting the full .NET Framework.
-# Add steps that publish symbols, save build artifacts, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
-
 trigger:
 - main
 
@@ -10,55 +5,24 @@ pool:
   vmImage: 'windows-latest'
 
 variables:
+  buildConfiguration: 'Release'
   solution: '**/*.sln'
-  buildPlatform: 'Any CPU'
-  buildConfiguration: 'Release'
-
-steps:
-- task: NuGetToolInstaller@1
-
-- task: NuGetCommand@2
-  inputs:
-    restoreSolution: '$(solution)'
-
-- task: VSBuild@1
-  inputs:
-    solution: '$(solution)'
-    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\WebApp.zip" /p:DeployIisAppPath="Default Web Site"'
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
-
-- task: VSTest@2
-  inputs:
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
-trigger:
-- main
-
-pool:
-  vmImage: 'windows-latest'
-
-variables:
-  buildConfiguration: 'Release'
 
 steps:
 - checkout: self
   fetchDepth: 0
 
-# .NET SDK gerekirse sabitle (istersen kaldır)
 - task: UseDotNet@2
   inputs:
     packageType: 'sdk'
     version: '8.x'
 
-# --- release.sh: artifacts klasörü ---
-- powershell: |
+- pwsh: |
     Remove-Item -Recurse -Force artifacts -ErrorAction SilentlyContinue
     New-Item -ItemType Directory -Force -Path artifacts | Out-Null
   displayName: 'Prepare artifacts folder'
 
-# --- release.sh: Version patch+1 + csproj update ---
-- powershell: |
+- pwsh: |
     $projects = @(
       "src/RuleEngine.Core/RuleEngine.Core.csproj",
       "src/RuleEngine.Sqlite/RuleEngine.Sqlite.csproj",
@@ -93,8 +57,12 @@ steps:
     Write-Host "##vso[task.setvariable variable=NEW_VERSION]$new"
   displayName: 'Bump patch version in csproj files'
 
-# --- release.sh: Build + Pack ---
-- powershell: |
+- pwsh: |
+    dotnet restore "$(solution)"
+    dotnet build "$(solution)" -c "$(buildConfiguration)" --no-restore
+  displayName: 'Restore and build solution'
+
+- pwsh: |
     $projects = @(
       "src/RuleEngine.Core/RuleEngine.Core.csproj",
       "src/RuleEngine.Sqlite/RuleEngine.Sqlite.csproj",
@@ -102,20 +70,22 @@ steps:
     )
 
     foreach ($p in $projects) {
-      dotnet build $p -c $(buildConfiguration)
-      dotnet pack  $p -c $(buildConfiguration) --no-build -o artifacts
+      dotnet pack $p -c "$(buildConfiguration)" --no-build -o artifacts
     }
-  displayName: 'Build and pack projects'
+  displayName: 'Pack projects (nupkg -> artifacts)'
 
-# --- release.sh: Push to NuGet (symbols hariç) ---
-- powershell: |
+- pwsh: |
     if ([string]::IsNullOrWhiteSpace($env:NUGET_API_KEY)) {
       Write-Host "Skipping NuGet push (NUGET_API_KEY not set)"
       exit 0
     }
 
-    $pkgs = Get-ChildItem -Path artifacts -Filter *.nupkg -File |
-      Where-Object { $_.Name -notmatch "symbols" }
+    $pkgs = Get-ChildItem -Path artifacts -File |
+      Where-Object {
+        $_.Name.EndsWith(".nupkg") -and
+        -not $_.Name.EndsWith(".snupkg") -and
+        -not ($_.Name -match "\.symbols\.nupkg$")
+      }
 
     foreach ($pkg in $pkgs) {
       Write-Host "Pushing $($pkg.Name)..."
@@ -129,26 +99,61 @@ steps:
   displayName: 'Push packages to NuGet'
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
 
-# --- release.sh: Create GitHub release ---
-- powershell: |
+- pwsh: |
     if ([string]::IsNullOrWhiteSpace($env:GITHUB_TOKEN)) {
       Write-Host "Skipping GitHub release (GITHUB_TOKEN not set)"
+      exit 0
+    }
+
+    $remote = git config --get remote.origin.url
+    if ([string]::IsNullOrWhiteSpace($remote) -or ($remote -notmatch "github\.com")) {
+      Write-Host "Skipping GitHub release (remote is not GitHub): $remote"
       exit 0
     }
 
     $newVersion = "$(NEW_VERSION)"
     if ([string]::IsNullOrWhiteSpace($newVersion)) { throw "NEW_VERSION is empty" }
 
-    $notes = @"
-## Release v$newVersion
+    $repo = $null
+    if ($remote -match "github\.com[:/](.+?)(\.git)?$") { $repo = $matches[1] }
+    if ([string]::IsNullOrWhiteSpace($repo)) { throw "Cannot parse GitHub repo from remote: $remote" }
 
-### Packages
-- Minima.RuleEngine.Core v$newVersion
-- Minima.RuleEngine.Sqlite v$newVersion
-- Minima.CampaignEngine.Core v$newVersion
+    $bodyLines = @(
+      "Release v$newVersion",
+      "",
+      "Packages:",
+      "- Minima.RuleEngine.Core v$newVersion",
+      "- Minima.RuleEngine.Sqlite v$newVersion",
+      "- Minima.CampaignEngine.Core v$newVersion"
+    )
+    $notes = ($bodyLines -join "`n")
 
-### Installation
-```bash
-dotnet add package Minima.RuleEngine.Core --version $newVersion
-dotnet add package Minima.RuleEngine.Sqlite --version $newVersion
-dotnet add package Minima.CampaignEngine.Core --version $newVersion
+    $payload = @{
+      tag_name   = "v$newVersion"
+      name       = "Release v$newVersion"
+      body       = $notes
+      draft      = $false
+      prerelease = $false
+    } | ConvertTo-Json -Depth 10
+
+    $headers = @{
+      Authorization = "token $env:GITHUB_TOKEN"
+      "User-Agent"  = "AzureDevOpsPipeline"
+      Accept        = "application/vnd.github+json"
+    }
+
+    $uri = "https://api.github.com/repos/$repo/releases"
+    Invoke-RestMethod -Method Post -Uri $uri -Headers $headers -Body $payload -ContentType "application/json" | Out-Null
+
+    Write-Host "GitHub release created: v$newVersion"
+  env:
+    GITHUB_TOKEN: $(GITHUB_TOKEN)
+  displayName: 'Create GitHub Release'
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: 'artifacts'
+    ArtifactName: 'nuget-packages'
+    publishLocation: 'Container'
+  displayName: 'Publish artifacts'
