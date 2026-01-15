@@ -47,6 +47,21 @@ jobs:
             sed -i "s|<Version>$CURRENT_VERSION</Version>|<Version>$NEW_VERSION</Version>|g" "$PROJECT"
           done
 
+          README_FILES=(
+            "README.md"
+            "README.tr.md"
+          )
+
+          for FILE in "${README_FILES[@]}"; do
+            sed -i "s/\(Minima\.RuleEngine\.Core --version \)[0-9.]\+/\1$NEW_VERSION/g" "$FILE"
+            sed -i "s/\(Minima\.RuleEngine\.Sqlite --version \)[0-9.]\+/\1$NEW_VERSION/g" "$FILE"
+            sed -i "s/\(Minima\.CampaignEngine\.Core --version \)[0-9.]\+/\1$NEW_VERSION/g" "$FILE"
+
+            sed -i "s/| Minima\.RuleEngine\.Core | [0-9.]\+ |/| Minima.RuleEngine.Core | $NEW_VERSION |/g" "$FILE"
+            sed -i "s/| Minima\.RuleEngine\.Sqlite | [0-9.]\+ |/| Minima.RuleEngine.Sqlite | $NEW_VERSION |/g" "$FILE"
+            sed -i "s/| Minima\.CampaignEngine\.Core | [0-9.]\+ |/| Minima.CampaignEngine.Core | $NEW_VERSION |/g" "$FILE"
+          done
+
           echo "new_version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Build and pack
@@ -74,6 +89,8 @@ jobs:
           git add src/RuleEngine.Core/RuleEngine.Core.csproj
           git add src/RuleEngine.Sqlite/RuleEngine.Sqlite.csproj
           git add src/CampaignEngine.Core/CampaignEngine.Core.csproj
+          git add README.md
+          git add README.tr.md
           git commit -m "chore: bump version to v${{ steps.version.outputs.new_version }} [skip ci]"
           git push origin HEAD:main
 
