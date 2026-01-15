@@ -7,7 +7,7 @@
     <LangVersion>latest</LangVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Minima.CampaignEngine.Core</PackageId>
-    <Version>1.1.15</Version>
+    <Version>1.1.16</Version>
     <Authors>Emre Karahan</Authors>
     <Description>Core campaign engine with rule-based system for .NET 8/9/10</Description>
     <PackageProjectUrl>https://github.com/Emrek-stack/Minima-Rule-Manager</PackageProjectUrl>

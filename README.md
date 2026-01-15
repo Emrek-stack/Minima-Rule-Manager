@@ -546,22 +546,22 @@ public class CampaignManagerTests
 
 ```bash
 # RuleEngine.Core
-dotnet add package Minima.RuleEngine.Core --version 1.1.11
+dotnet add package Minima.RuleEngine.Core --version 1.1.16
 
 # RuleEngine.Sqlite
-dotnet add package Minima.RuleEngine.Sqlite --version 1.1.11
+dotnet add package Minima.RuleEngine.Sqlite --version 1.1.16
 
 # CampaignEngine.Core
-dotnet add package Minima.CampaignEngine.Core --version 1.1.11
+dotnet add package Minima.CampaignEngine.Core --version 1.1.16
 ```
 
 ### Package Information
 
 | Package | Version | .NET Support | Download |
 |---------|---------|--------------|----------|
-| Minima.RuleEngine.Core | 1.1.11 | 8.0, 9.0, 10.0 | [![NuGet](https://img.shields.io/nuget/v/Minima.RuleEngine.Core.svg)](https://www.nuget.org/packages/Minima.RuleEngine.Core/) |
-| Minima.RuleEngine.Sqlite | 1.1.11 | 8.0, 9.0, 10.0 | [![NuGet](https://img.shields.io/nuget/v/Minima.RuleEngine.Sqlite.svg)](https://www.nuget.org/packages/Minima.RuleEngine.Sqlite/) |
-| Minima.CampaignEngine.Core | 1.1.11 | 8.0, 9.0, 10.0 | [![NuGet](https://img.shields.io/nuget/v/Minima.CampaignEngine.Core.svg)](https://www.nuget.org/packages/Minima.CampaignEngine.Core/) |
+| Minima.RuleEngine.Core | 1.1.16 | 8.0, 9.0, 10.0 | [![NuGet](https://img.shields.io/nuget/v/Minima.RuleEngine.Core.svg)](https://www.nuget.org/packages/Minima.RuleEngine.Core/) |
+| Minima.RuleEngine.Sqlite | 1.1.16 | 8.0, 9.0, 10.0 | [![NuGet](https://img.shields.io/nuget/v/Minima.RuleEngine.Sqlite.svg)](https://www.nuget.org/packages/Minima.RuleEngine.Sqlite/) |
+| Minima.CampaignEngine.Core | 1.1.16 | 8.0, 9.0, 10.0 | [![NuGet](https://img.shields.io/nuget/v/Minima.CampaignEngine.Core.svg)](https://www.nuget.org/packages/Minima.CampaignEngine.Core/) |
 
 ### Recent NuGet Updates
 
