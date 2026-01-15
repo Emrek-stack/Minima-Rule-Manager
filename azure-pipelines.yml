@@ -1,0 +1,154 @@
+# ASP.NET Core (.NET Framework)
+# Build and test ASP.NET Core projects targeting the full .NET Framework.
+# Add steps that publish symbols, save build artifacts, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+trigger:
+- main
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  solution: '**/*.sln'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+
+steps:
+- task: NuGetToolInstaller@1
+
+- task: NuGetCommand@2
+  inputs:
+    restoreSolution: '$(solution)'
+
+- task: VSBuild@1
+  inputs:
+    solution: '$(solution)'
+    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\WebApp.zip" /p:DeployIisAppPath="Default Web Site"'
+    platform: '$(buildPlatform)'
+    configuration: '$(buildConfiguration)'
+
+- task: VSTest@2
+  inputs:
+    platform: '$(buildPlatform)'
+    configuration: '$(buildConfiguration)'
+trigger:
+- main
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  buildConfiguration: 'Release'
+
+steps:
+- checkout: self
+  fetchDepth: 0
+
+# .NET SDK gerekirse sabitle (istersen kaldır)
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    version: '8.x'
+
+# --- release.sh: artifacts klasörü ---
+- powershell: |
+    Remove-Item -Recurse -Force artifacts -ErrorAction SilentlyContinue
+    New-Item -ItemType Directory -Force -Path artifacts | Out-Null
+  displayName: 'Prepare artifacts folder'
+
+# --- release.sh: Version patch+1 + csproj update ---
+- powershell: |
+    $projects = @(
+      "src/RuleEngine.Core/RuleEngine.Core.csproj",
+      "src/RuleEngine.Sqlite/RuleEngine.Sqlite.csproj",
+      "src/CampaignEngine.Core/CampaignEngine.Core.csproj"
+    )
+
+    $first = $projects[0]
+    $content = Get-Content $first -Raw
+
+    $m = [regex]::Match($content, "<Version>([^<]+)</Version>")
+    if (-not $m.Success) { throw "Version tag not found in $first" }
+
+    $current = $m.Groups[1].Value.Trim()
+    $parts = $current.Split('.')
+    if ($parts.Count -lt 3) { throw "Version format unexpected: $current" }
+
+    $new = "{0}.{1}.{2}" -f $parts[0], $parts[1], ([int]$parts[2] + 1)
+
+    Write-Host "Current version: $current"
+    Write-Host "New version: $new"
+
+    foreach ($p in $projects) {
+      $raw = Get-Content $p -Raw
+      $updated = $raw.Replace("<Version>$current</Version>", "<Version>$new</Version>")
+      if ($updated -eq $raw) {
+        throw "Could not update Version in $p (expected <Version>$current</Version>)"
+      }
+      Set-Content -Path $p -Value $updated -NoNewline
+      Write-Host "Updated $p"
+    }
+
+    Write-Host "##vso[task.setvariable variable=NEW_VERSION]$new"
+  displayName: 'Bump patch version in csproj files'
+
+# --- release.sh: Build + Pack ---
+- powershell: |
+    $projects = @(
+      "src/RuleEngine.Core/RuleEngine.Core.csproj",
+      "src/RuleEngine.Sqlite/RuleEngine.Sqlite.csproj",
+      "src/CampaignEngine.Core/CampaignEngine.Core.csproj"
+    )
+
+    foreach ($p in $projects) {
+      dotnet build $p -c $(buildConfiguration)
+      dotnet pack  $p -c $(buildConfiguration) --no-build -o artifacts
+    }
+  displayName: 'Build and pack projects'
+
+# --- release.sh: Push to NuGet (symbols hariç) ---
+- powershell: |
+    if ([string]::IsNullOrWhiteSpace($env:NUGET_API_KEY)) {
+      Write-Host "Skipping NuGet push (NUGET_API_KEY not set)"
+      exit 0
+    }
+
+    $pkgs = Get-ChildItem -Path artifacts -Filter *.nupkg -File |
+      Where-Object { $_.Name -notmatch "symbols" }
+
+    foreach ($pkg in $pkgs) {
+      Write-Host "Pushing $($pkg.Name)..."
+      dotnet nuget push $pkg.FullName `
+        --api-key "$env:NUGET_API_KEY" `
+        --source "https://api.nuget.org/v3/index.json" `
+        --skip-duplicate
+    }
+  env:
+    NUGET_API_KEY: $(NUGET_API_KEY)
+  displayName: 'Push packages to NuGet'
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+
+# --- release.sh: Create GitHub release ---
+- powershell: |
+    if ([string]::IsNullOrWhiteSpace($env:GITHUB_TOKEN)) {
+      Write-Host "Skipping GitHub release (GITHUB_TOKEN not set)"
+      exit 0
+    }
+
+    $newVersion = "$(NEW_VERSION)"
+    if ([string]::IsNullOrWhiteSpace($newVersion)) { throw "NEW_VERSION is empty" }
+
+    $notes = @"
+## Release v$newVersion
+
+### Packages
+- Minima.RuleEngine.Core v$newVersion
+- Minima.RuleEngine.Sqlite v$newVersion
+- Minima.CampaignEngine.Core v$newVersion
+
+### Installation
+```bash
+dotnet add package Minima.RuleEngine.Core --version $newVersion
+dotnet add package Minima.RuleEngine.Sqlite --version $newVersion
+dotnet add package Minima.CampaignEngine.Core --version $newVersion
